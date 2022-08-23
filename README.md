@@ -17,14 +17,14 @@ python3 -m venv venv_ip2root
 source venv_ip2root/bin/activate
 ```
 
-### 3. Install requiered dependencies
+### 3. Install required dependencies
 
 ```shell
-pip3 install -r requierments.txt
+pip3 install -r requirements.txt
 ```
 
 ### 4. Run ip2root
 
 ```shell
-pytyhon3 main.py -t <target_ip>
+python3 main.py -t <target_ip>
 ```
