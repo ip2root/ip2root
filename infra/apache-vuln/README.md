@@ -1,6 +1,5 @@
 # Build and start the vulnerable docker :
-`chmod +x ./build.sh`
-`./build.sh`
+`chmod +x ./build.sh && ./build.sh`
 
 # Obtain a shell from the docker :
 `docker exec -it apache-vuln /bin/bash`
