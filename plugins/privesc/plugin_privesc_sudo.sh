@@ -17,7 +17,7 @@ then
     cmd=$(echo $code | awk -F'<pre><code>sudo' '{print $2}')
     cmd=${cmd//$'\n'/}
     cmd=$(echo $cmd | awk -F'</code></pre>' '{print $1}')
-    $cmd
+    'sudo' $cmd
 else
     exit 1
 fi
