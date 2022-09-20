@@ -7,6 +7,8 @@ from multiprocessing import Process
 import rs_client
 import sys
 import plugins.initial_access.plugin_initial_access_apache2_4_49_RCE as plugin_initial_access_apache2_4_49_RCE
+from subprocess import Popen, PIPE
+import errno
 
 
 def listener():
