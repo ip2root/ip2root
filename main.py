@@ -38,10 +38,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
+    parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     args = parser.parse_args()
+    if args.local_ip == None:
+        LOCAL_ADDRESS = extract_ip()
+    else:
+        LOCAL_ADDRESS = args.local_ip
     res_recon = recon.nmap_scan(args.target_ip)
 
-    LOCAL_ADDRESS = extract_ip()
     LOCAL_PORT = 9001
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
