@@ -28,8 +28,9 @@ def extract_ip():
     try:       
         st.connect(('10.255.255.255', 1))
         IP = st.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
+    except Exception as e:
+        print(e)
+        sys.exit()
     finally:
         st.close()
     return IP
