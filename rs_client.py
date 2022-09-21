@@ -391,7 +391,7 @@ class RSH:
 
             print("[+] Uploading %s.." % localfile)
 
-            self.sock.send("/bin/echo -n '' > %s\n" % remotefile)
+            self.sock.send("/bin/echo -n '' > %s\n" % remotefile) # Pb here (special char in privesc script that triggers a syntax error)
             self.sock.receive()
 
             file = open(localfile, 'r')
@@ -399,6 +399,7 @@ class RSH:
                 chunk = file.read(1024)
                 if not chunk: 
                     break
+                #print(repr(chunk))
                 self.sock.send("/bin/echo -en %s >> %s\n" % (repr(chunk), remotefile))
                 self.sock.receive()
             file.close()
