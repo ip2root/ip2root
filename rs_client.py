@@ -152,10 +152,7 @@ class Shell:
 
     def interact(self):
         time.sleep(0.1)
-        print("                           ")
-        print("[?] Help command: rsh help ")
-        print("[?] Exit command: rsh exit ")
-        print("[+] Happy hacking!         ")
+        RSH.help(self)
         while True:
             self.output()
             self.input()
