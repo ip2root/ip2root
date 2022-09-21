@@ -9,8 +9,7 @@ then
     exit 1
 else
     url="https://gtfobins.github.io/gtfobins/${bin}/#sudo"
-    echo "$url"
-    code=$(curl "$url")
+    code=$(curl "$url" --silent)
 fi
 if [[ $code == *'<pre><code>sudo'* ]]
 then
