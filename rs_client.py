@@ -44,6 +44,7 @@ def test_privesc(sock, shell):
             rsh.file_exists('/tmp/valid_root')
             if rsh.file_exists('/tmp/valid_root') == True:
                 sock.send('rm /tmp/valid_root\n')
+                sock.send('rm /tmp/exploit{}.sh\n'.format(counter))
                 return shell
             shell.interact()
             sock.close()
