@@ -23,7 +23,7 @@ def main(port, interface):
         shell = Shell(sock, persistent)
         print('[+] Identifying privesc capabilities')
         sh = test_privesc(sock, shell)
-        sh.intercat()
+        sh.interact()
 
     except KeyboardInterrupt:
         sock.close()
