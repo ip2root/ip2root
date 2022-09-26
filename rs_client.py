@@ -507,7 +507,8 @@ class RSH:
     def fingerprint(self):
         self.sock.send("id\n")
         print("[+] ID level : %s" % self.sock.receive())
-        self.sock.send("systeminfo | findstr /R '^OS.Name'\n")
+        self.sock.send("systeminfo | findstr /R '^OS name \s*(.*)'\n")
         if "not found" in self.sock.receive() :
             self.sock.send("cat /etc/os-release | head -n 1 | cut -d '=' -f2\n")
-        print("[+] Operating system : %s" % self.sock.receive())
+            print("[+] Operating system : %s" % self.sock.receive())
+        else : print("[+] %s" % self.sock.receive())
