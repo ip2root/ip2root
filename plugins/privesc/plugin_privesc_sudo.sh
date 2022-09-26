@@ -8,7 +8,7 @@ if [[ "$bin" == *' '* ]]
 then
     exit 1
 else
-    url="https://gtfobins.github.io/gtfobins/${bin}/#sudo"
+    url="https://gtfobins.github.io/gtfobins/${bin}/#sudo" # make the request through the host
     code=$(curl "$url" --silent)
 fi
 if [[ $code == *'<pre><code>sudo'* ]]
