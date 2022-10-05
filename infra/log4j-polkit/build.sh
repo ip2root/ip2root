@@ -1,2 +1,2 @@
-docker pull 0xalwayslucky/log4j-polkit-vulnerable-server
-docker run -p 5555:8080 0xalwayslucky/log4j-polkit-vulnerable-server
+docker build -t log4j-polkit .
+docker run -p 5555:8080 --hostname victim log4j-polkit
