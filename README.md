@@ -19,7 +19,7 @@ Any contribution would be appraciated. You can create a pull request to propose 
 git clone git@github.com:0xblank/ip2root.git
 ```
 
-### 2. Create a venv
+### 2. Create a venv (optional)
 
 ```shell
 python3 -m venv venv_ip2root
