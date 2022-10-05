@@ -2,6 +2,15 @@
 
 This tools aims to provide a root shell from a simple IP.
 
+## DISCLAIMER
+
+The tool has been created for pentesters and redteamers and should only be used against targets you have rights on.
+We are not responsible of the actions done by your usage of the tool.
+
+## Contribution
+
+Any contribution would be appraciated. You can create a pull request to propose an imporvement or new exploits (initial access or privesc) :).
+
 ##  How to
 
 ### 1. Clone repo
