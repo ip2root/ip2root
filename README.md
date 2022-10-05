@@ -1,6 +1,6 @@
 # ip2root
 
-This tools aims to provide a root shell from a simple IP.
+This tool aims to provide a root shell from a simple IP.
 
 ## DISCLAIMER
 
