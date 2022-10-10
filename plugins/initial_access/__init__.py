@@ -1,1 +1,1 @@
-__all__ = ["plugin_initial_access_apache2_4_49_RCE"]
+__all__ = ["apache2_4_49_RCE"]
