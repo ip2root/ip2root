@@ -1,6 +1,15 @@
 # ip2root
 
-This tools aims to provide a root shell from a simple IP.
+This tool aims to provide a root shell from a simple IP.
+
+## DISCLAIMER
+
+The tool has been created for pentesters and redteamers and should only be used against targets you have rights on.
+We are not responsible of the actions done by your usage of the tool.
+
+## Contribution
+
+Any contribution would be appraciated. You can create a pull request to propose an imporvement or new exploits (initial access or privesc) :).
 
 ##  How to
 
@@ -10,7 +19,7 @@ This tools aims to provide a root shell from a simple IP.
 git clone git@github.com:0xblank/ip2root.git
 ```
 
-### 2. Create a venv
+### 2. Create a venv (optional)
 
 ```shell
 python3 -m venv venv_ip2root
