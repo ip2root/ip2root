@@ -23,7 +23,6 @@ def read_plugins_configs():
                 'service' : config['DEFAULT']['service'],
                 'versions' : config['DEFAULT']['versions']
             }
-
     return configs
 
 
