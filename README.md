@@ -7,10 +7,6 @@ This tool aims to provide a root shell from a simple IP.
 The tool has been created for pentesters and redteamers and should only be used against targets you have rights on.
 We are not responsible of the actions done by your usage of the tool.
 
-## Contribution
-
-Any contribution would be appraciated. You can create a pull request to propose an imporvement or new exploits (initial access or privesc) :).
-
 ##  How to use to tool
 
 ### 1. Clone repo
@@ -39,10 +35,11 @@ python3 main.py -t <target_ip>
 ```
 
 # How to contribute
+Any contribution would be appraciated (improvement, new exploits, etc.).
 
 ## Initial access plugin
 
-Name your python file like this `serviceversionvuln.py` ex: `apache2_4_49RCE.py`, create a config file with the same name but ending with `.ini` and place them in the `plugins/initial_access` directory. The config file should follow the following format :
+Name your python file like this `serviceversionvuln.py` ex: `apache2_4_49RCE.py`, create a config file with the same name but ending with `.ini` and place them in the `plugins/initial_access` directory. The config file should match the following format :
 
 ```ini
 [DEFAULT]
