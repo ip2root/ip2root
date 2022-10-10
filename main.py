@@ -8,7 +8,6 @@ import sys
 from plugins import initial_access
 
 def listener(listener_port, listener_address):
-    print('listener_address :' + listener_address)
     sys.stdin = open(0)
     rs_client.main(listener_port, listener_address)
 
