@@ -1,4 +1,4 @@
-# ip2root
+# IP2ROOT
 
 This tool aims to provide a root shell from a simple IP.
 
@@ -7,7 +7,7 @@ This tool aims to provide a root shell from a simple IP.
 The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on.
 We are not responsible of the actions done by your usage of the tool.
 
-##  How to use to tool
+##  How to use the tool
 
 ### 1. Clone repo
 
@@ -53,3 +53,7 @@ The plugin_name should be the exact same as your python file (case sensitive), t
 ## Privesc plugins
 
 Privesc script must be written in bash for linux targets and in .bat or .ps1 for windows targets.
+
+## Licence
+
+The following tool is under the GNU GPL v3.0 licence. Please refer to the [licence](https://github.com/0xblank/ip2root/blob/master/COPYING.md).
