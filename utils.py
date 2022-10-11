@@ -26,3 +26,10 @@ def validate_ip_address(address):
     except ValueError:
         print("[-] Error: IP address {} is not valid".format(address))
         exit(1)
+
+def prompt(message):
+    answer = ""
+    while(answer != "Y" and answer != "N"):
+        answer = input(message + " (Y/N): ")
+        answer = answer.upper()
+    return answer == "Y"

