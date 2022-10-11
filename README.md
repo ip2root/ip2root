@@ -48,9 +48,11 @@ service = <name of the vulnerable service>
 versions = <versions number>
 ```
 
-The plugin_name should be the exact same as your python file (case sensitive), the service name should be the same as the name returned by nmap (case sensitive), the versions number should have the same format that the one returned by nmap, you can specify mutliple versions numbers.
+The plugin_name should be the exact same as your python file (case sensitive).
+The service name should be the same as the name returned by nmap (case sensitive).
+The versions number should have the same format that the one returned by nmap. You can specify mutliple versions numbers.
 
-## Privesc plugins
+## Privesc plugins
 
 Privesc script must be written in bash for linux targets and in .bat or .ps1 for windows targets.
 
