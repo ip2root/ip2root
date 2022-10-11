@@ -7,7 +7,7 @@ import rs_client
 import sys
 import configparser
 import os
-import utils
+from utils import *
 from plugins.initial_access import *
 import constants
 import privesc
@@ -26,7 +26,8 @@ def read_plugins_configs() -> dict:
             config.read(os.path.join(initial_plugins_path, f))
             configs[config['DEFAULT']['plugin_name']] = { 
                 'service' : config['DEFAULT']['service'],
-                'versions' : config['DEFAULT']['versions']
+                'versions' : config['DEFAULT']['versions'],
+                'extrainfo' : config['DEFAULT']['extrainfo']
             }
     return configs
 
@@ -103,8 +104,8 @@ if __name__ == '__main__':
         LOCAL_IP = args.local_ip
 
     # validate IP addresses' format
-    utils.validate_ip_address(args.target_ip)
-    utils.validate_ip_address(LOCAL_IP)
+    validate_ip_address(args.target_ip)
+    validate_ip_address(LOCAL_IP)
     
     res_recon = recon.nmap_scan(args.target_ip)
 
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     for i in res_recon:
         print('[+] Looking for exploits for port {}'.format(i['port']))
         for plugin_name, values in configs.items():
-            if i['product'] == values['service'] and i ['version'] in values['versions']:
+            if ((safe_get(i, 'product') is not None and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') is not None and safe_get(i, 'version') in safe_get(values, 'versions'))) or (safe_get(i,'extrainfo') is not None and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')):
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()
