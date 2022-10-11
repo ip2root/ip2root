@@ -4,7 +4,7 @@ This tool aims to provide a root shell from a simple IP.
 
 ## DISCLAIMER
 
-The tool has been created for pentesters and redteamers and should only be used against targets you have rights on.
+The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on.
 We are not responsible of the actions done by your usage of the tool.
 
 ##  How to use to tool
@@ -31,7 +31,7 @@ pip3 install -r requirements.txt
 ### 4. Run ip2root
 
 ```shell
-python3 main.py -t <target_ip>
+python3 main.py -t <target_ip> [-l <local-ip>] [-p <local-port>]
 ```
 
 # How to contribute
