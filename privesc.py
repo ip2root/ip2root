@@ -2,7 +2,10 @@ import os
 import rs_client
 from time import sleep
 
-def load_all_plugins(sock, shell):
+def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell) -> None:
+    """
+    Run all available privesc plugins
+    """
     print('[+] Identifying privesc capabilities')
     directory = './plugins/privesc/'
     counter = 1

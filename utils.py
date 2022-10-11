@@ -1,8 +1,10 @@
 import xml.dom.minidom
 import ipaddress 
 
-def parse_nmap_xml(target:str) -> str:
-
+def parse_nmap_xml(target: str) -> str:
+    """
+    Parse xml results from a nmap scan
+    """
     doc = xml.dom.minidom.parseString(target)
     ports_xml = doc.getElementsByTagName('port')
     open_ports = []
@@ -19,15 +21,20 @@ def parse_nmap_xml(target:str) -> str:
         open_ports.append(port)
     return(open_ports)
 
-def validate_ip_address(address):
+def validate_ip_address(address: str) -> None:
+    """
+    Check if the string is a correct IP address
+    """
     try:
-        ip = ipaddress.ip_address(address)
-        return True
+        ipaddress.ip_address(address)
     except ValueError:
         print("[-] Error: IP address {} is not valid".format(address))
         exit(1)
 
-def prompt(message):
+def prompt(message: str) -> bool:
+    """
+    Handle a yes/no prompt
+    """
     answer = ""
     while(answer != "Y" and answer != "N"):
         answer = input(message + " (Y/N): ")

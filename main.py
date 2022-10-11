@@ -13,7 +13,10 @@ import constants
 import privesc
 
 
-def read_plugins_configs():
+def read_plugins_configs() -> dict:
+    """
+    Read all the plugins config files
+    """
     config = configparser.ConfigParser()
     current_dir = os.path.dirname(os.path.abspath(__file__))
     initial_plugins_path = os.path.join(current_dir, constants.PLUGINS_DIR, constants.INITIAL_ACCESS_PLUGINS_DIR)
@@ -28,7 +31,10 @@ def read_plugins_configs():
     return configs
 
 
-def listener(listener_port, listener_address):
+def listener(listener_port: int, listener_address: str) -> None:
+    """
+    Create a listener that waits for a connection from the reverse shell
+    """
     sys.stdin = open(0)
     persistent = False
     hosts = None
@@ -47,7 +53,10 @@ def listener(listener_port, listener_address):
         sock.close()
 
 
-def exploit(plugin_name, target_ip, target_port, local_ip, local_port):
+def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int, local_ip: str, local_port: int) -> None:
+    """
+    Run an initial access plugin
+    """
     try:
         print('[+] Running plugin {}'.format(plugin_name))
         res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port)
@@ -57,7 +66,10 @@ def exploit(plugin_name, target_ip, target_port, local_ip, local_port):
         print(e)
 
 
-def extract_ip():
+def extract_ip() -> None | str:
+    """
+    Return the local IP of the machine
+    """
     st = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:       
         st.connect(('10.255.255.255', 1))
@@ -102,7 +114,7 @@ if __name__ == '__main__':
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP))
                 listener_process.start()
-                exploit_process = Process(target=exploit, args = (plugin_name, args.target_ip, target_port, LOCAL_IP, args.local_port))
+                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, args.target_ip, target_port, LOCAL_IP, args.local_port))
                 exploit_process.start()
                 listener_process.join()
                 exploit_process.join()
