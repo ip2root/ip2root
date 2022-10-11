@@ -1,5 +1,6 @@
 import xml.dom.minidom
-import ipaddress 
+import ipaddress
+from typing import Any
 
 def parse_nmap_xml(target: str) -> str:
     """
@@ -18,6 +19,7 @@ def parse_nmap_xml(target: str) -> str:
         port['service_type'] = service.getAttribute('name')
         port['product_name'] = service.getAttribute('product')
         port['product_version'] = service.getAttribute('version')
+        port['extrainfo'] = service.getAttribute('extrainfo')
         open_ports.append(port)
     return(open_ports)
 
@@ -40,3 +42,9 @@ def prompt(message: str) -> bool:
         answer = input(message + " (Y/N): ")
         answer = answer.upper()
     return answer == "Y"
+
+def safe_get(dict: dict, key: Any) -> Any | None:
+    if key in dict.keys():
+        return dict[key]
+    else:
+        return None
