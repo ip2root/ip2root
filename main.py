@@ -7,6 +7,7 @@ import rs_client
 import sys
 import configparser
 import os
+import ipaddress 
 from plugins.initial_access import *
 import constants
 
@@ -54,6 +55,14 @@ def extract_ip():
     return IP
 
 
+def validate_ip_address(address):
+    try:
+        ip = ipaddress.ip_address(address)
+        return True
+    except ValueError:
+        print("[-] Error: IP address {} is not valid".format(address))
+        exit(1)
+
 if __name__ == '__main__':
 
     configs = read_plugins_configs()
@@ -64,10 +73,16 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--local_port', default=9001, type=int, help='local port', required=False)
     args = parser.parse_args()
 
+
     if args.local_ip == None:
         LOCAL_IP = extract_ip()
     else:
         LOCAL_IP = args.local_ip
+
+    # validate IP addresses' format
+    validate_ip_address(args.target_ip)
+    validate_ip_address(LOCAL_IP)
+    
     res_recon = recon.nmap_scan(args.target_ip)
 
     BUFFER_SIZE = 1024 * 128

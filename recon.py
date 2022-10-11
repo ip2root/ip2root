@@ -1,4 +1,3 @@
-import subprocess
 from libnmap.process import NmapProcess
 import utils
 
