@@ -66,7 +66,7 @@ def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int
         print(e)
 
 
-def extract_ip() -> None | str:
+def extract_ip() -> None or str:
     """
     Return the local IP of the machine
     """
