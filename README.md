@@ -54,6 +54,6 @@ The plugin_name should be the exact same as your python file (case sensitive), t
 
 Privesc script must be written in bash for linux targets and in .bat or .ps1 for windows targets.
 
-## Licence
+# Licence
 
 The following tool is under the GNU GPL v3.0 licence. Please refer to the [licence](https://github.com/0xblank/ip2root/blob/master/COPYING.md).
