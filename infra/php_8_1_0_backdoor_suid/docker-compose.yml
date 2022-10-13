@@ -1,7 +1,6 @@
 version: '2'
 services:
  web:
-   platform: linux/amd64
    image: vulhub/php:8.1-backdoor
    volumes:
     - ./index.php:/var/www/html/index.php
