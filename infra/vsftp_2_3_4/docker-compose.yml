@@ -1,9 +1,0 @@
-version: '3'
-
-services:
-
-  vsftp:
-    build: .
-    image: vsftpd-2_3_4
-    ports:
-    - "21:21"
