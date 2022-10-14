@@ -62,7 +62,7 @@ def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int
         print('[+] Running plugin {}'.format(plugin_name))
         res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port)
         if res is True:
-            print('[+] Exploit was successful !')
+            ('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 with open(compromission_recap_file_name, 'w') as f:
                     f.write('Plugin used for initial access : {}\n'.format(plugin_name))
