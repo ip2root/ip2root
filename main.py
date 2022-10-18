@@ -27,7 +27,8 @@ def read_plugins_configs() -> dict:
             configs[config['DEFAULT']['plugin_name']] = { 
                 'service' : config['DEFAULT']['service'],
                 'versions' : config['DEFAULT']['versions'],
-                'extrainfo' : config['DEFAULT']['extrainfo']
+                'extrainfo' : config['DEFAULT']['extrainfo'],
+                'http_title' : config['DEFAULT']['http-title']   
             }
     return configs
 
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     for i in res_recon:
         print('[+] Looking for exploits for port {}'.format(i['port']))
         for plugin_name, values in configs.items():
-            if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo') or safe_get(i, 'http_title') and safe_get(values, 'http_title')):
+            if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()

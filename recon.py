@@ -16,15 +16,14 @@ def nmap_scan(ip: str, port: int | None) -> list:
     res_recon = []
     for port in open_ports:
         print('[+] Detected port {} {} : {} {} {} {}'.format(port['port_num'], port['state'], port['protocol'], port['service_type'], port['product_name'], port['product_version'], safe_get(port, 'extrainfo')))
-        if safe_get(port, 'http_title'):
-            print('[+]|_http-title: {}'.format(port['http_title']))
         res_port = {
             'port': port['port_num'],
             'proto': port['protocol'],
             'service': port['service_type'],
             'product': port['product_name'],
             'version': port['product_version'],
-            'extrainfo': safe_get(port, 'extrainfo')
+            'extrainfo': safe_get(port, 'extrainfo'),
+            'http_title': port['http_title']
         }
         to_del = []
         for key in res_port:
