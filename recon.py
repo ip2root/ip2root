@@ -1,11 +1,14 @@
 from libnmap.process import NmapProcess
 from utils import *
 
-def nmap_scan(ip: str) -> list:
+def nmap_scan(ip: str, port: int | None) -> list:
     """
     Run nmap scan and return a list of open ports
     """
-    nmap_proc = NmapProcess(ip, '-A')
+    if port:
+        nmap_proc = NmapProcess(ip, '-A -p {}'.format(port))
+    else:
+        nmap_proc = NmapProcess(ip, '-A')
     print('[+] Running nmap scan on {}'.format(ip))
     nmap_proc.run()
     #print(nmap_proc.stdout)

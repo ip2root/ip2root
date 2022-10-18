@@ -93,7 +93,8 @@ if __name__ == '__main__':
 
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
-    parser.add_argument('-p', '--local_port', default=9001, type=int, help='local port', required=False)
+    parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
+    parser.add_argument('-rp', '--remote_port', type=int, required=False)
     parser.add_argument('-o', '--output', type=str, help='output file name', required=False)
     args = parser.parse_args()
 
@@ -107,7 +108,7 @@ if __name__ == '__main__':
     validate_ip_address(args.target_ip)
     validate_ip_address(LOCAL_IP)
     
-    res_recon = recon.nmap_scan(args.target_ip)
+    res_recon = recon.nmap_scan(args.target_ip, args.remote_port)
 
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
