@@ -1,3 +1,4 @@
+import re
 import xml.dom.minidom
 import ipaddress
 from typing import Any
@@ -11,8 +12,6 @@ def parse_nmap_xml(target: str) -> str:
     open_ports = []
     for i, port_xml in enumerate(ports_xml):
         port = {}
-        title = doc.getElementsByTagName('script')[i]
-        print(title.getAttribute('id'))
         port['port_num'] = port_xml.getAttribute('portid')
         port['protocol'] = port_xml.getAttribute('protocol')
         state = doc.getElementsByTagName('state')[i]
@@ -22,6 +21,10 @@ def parse_nmap_xml(target: str) -> str:
         port['product_name'] = service.getAttribute('product')
         port['product_version'] = service.getAttribute('version')
         port['extrainfo'] = service.getAttribute('extrainfo')
+        scripts = doc.getElementsByTagName('script')
+        for res_script in scripts:
+            if res_script.getAttribute('id') == 'http-title':
+                port['http_title'] = res_script.getAttribute('output')
         open_ports.append(port)
     return(open_ports)
 
