@@ -74,4 +74,4 @@ Under the following terms:
 * NonCommercial — You may not use the material for commercial purposes.
 * ShareAlike — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original. 
 
-Please refer to the [licence](https://github.com/0xblank/ip2root/blob/master/COPYING.md).
+Please refer to the [licence](https://github.com/ip2root/ip2root/blob/master/COPYING.md).
