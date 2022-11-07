@@ -2,6 +2,8 @@
 
 This tool aims to provide a root shell from a simple IP.
 
+WARNING : The tool is currently in an early state of release. You can track progress here : https://github.com/orgs/ip2root/projects/1
+
 ## DISCLAIMER
 
 The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on.
