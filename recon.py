@@ -11,7 +11,6 @@ def nmap_scan(ip: str, port: int | None) -> list:
         nmap_proc = NmapProcess(ip, '-A')
     print('[+] Running nmap scan on {}'.format(ip))
     nmap_proc.run()
-    #print(nmap_proc.stdout)
     open_ports = parse_nmap_xml(nmap_proc.stdout)
     res_recon = []
     for port in open_ports:
