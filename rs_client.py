@@ -253,6 +253,14 @@ class RSH:
         if len(argv) > 1 and argv[1] == "fingerprint":
             self.fingerprint()
             return
+        
+        if len(argv) > 1 and argv[1] == "help":
+            if len(argv) > 2:
+                self.help(argv[2])
+                return
+            else:
+                self.help()
+                return
 
         print("[!] Error: Unknown command '%s'" % command)
 

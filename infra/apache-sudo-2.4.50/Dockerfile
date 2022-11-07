@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:lastest
 RUN apt-get update
 RUN apt-get install wget curl make gcc perl nano sudo -y
 RUN apt-get install libapr1-dev libaprutil1-dev libpcre3-dev -y

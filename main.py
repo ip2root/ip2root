@@ -7,7 +7,7 @@ import rs_client
 import sys
 import configparser
 import os
-import utils
+from utils import *
 from plugins.initial_access import *
 import constants
 import privesc
@@ -26,7 +26,9 @@ def read_plugins_configs() -> dict:
             config.read(os.path.join(initial_plugins_path, f))
             configs[config['DEFAULT']['plugin_name']] = { 
                 'service' : config['DEFAULT']['service'],
-                'versions' : config['DEFAULT']['versions']
+                'versions' : config['DEFAULT']['versions'],
+                'extrainfo' : config['DEFAULT']['extrainfo'],
+                'http_title' : config['DEFAULT']['http-title']   
             }
     return configs
 
@@ -61,7 +63,7 @@ def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int
         print('[+] Running plugin {}'.format(plugin_name))
         res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port)
         if res is True:
-            print('[+] Exploit was successful !')
+            ('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 with open(compromission_recap_file_name, 'w') as f:
                     f.write('Plugin used for initial access : {}\n'.format(plugin_name))
@@ -69,7 +71,7 @@ def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int
         print(e)
 
 
-def extract_ip() -> None or str:
+def extract_ip() -> None | str:
     """
     Return the local IP of the machine
     """
@@ -92,7 +94,8 @@ if __name__ == '__main__':
 
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
-    parser.add_argument('-p', '--local_port', default=9001, type=int, help='local port', required=False)
+    parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
+    parser.add_argument('-rp', '--remote_port', type=int, required=False)
     parser.add_argument('-o', '--output', type=str, help='output file name', required=False)
     args = parser.parse_args()
 
@@ -103,10 +106,10 @@ if __name__ == '__main__':
         LOCAL_IP = args.local_ip
 
     # validate IP addresses' format
-    utils.validate_ip_address(args.target_ip)
-    utils.validate_ip_address(LOCAL_IP)
+    validate_ip_address(args.target_ip)
+    validate_ip_address(LOCAL_IP)
     
-    res_recon = recon.nmap_scan(args.target_ip)
+    res_recon = recon.nmap_scan(args.target_ip, args.remote_port)
 
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
@@ -114,7 +117,7 @@ if __name__ == '__main__':
     for i in res_recon:
         print('[+] Looking for exploits for port {}'.format(i['port']))
         for plugin_name, values in configs.items():
-            if i['product'] == values['service'] and i ['version'] in values['versions']:
+            if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()
