@@ -1,5 +1,4 @@
 import os
-import sys
 import rs_client
 from time import sleep
 
@@ -12,7 +11,7 @@ def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromissi
     counter = 1
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
-        if os.path.isfile(f) and 'sudo' not in f:
+        if os.path.isfile(f):
             print('[+] Uploading privesc script number {}'.format(counter))
             rsh = rs_client.RSH(sock)
             if '.sh' in f:
