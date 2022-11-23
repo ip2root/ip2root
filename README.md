@@ -33,11 +33,12 @@ pip3 install -r requirements.txt
 ### 4. Run ip2root
 
 ```shell
-python3 main.py -t <target_ip> [-l <local-ip>] [-p <local-port>]
+python3 main.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
 ```
 
-# How to contribute
-Any contribution would be appraciated (improvement, new exploits, etc.).
+## How to contribute
+
+Any contribution would be appreciated (improvement, new exploits, etc.).
 
 ## Initial access plugin
 
@@ -58,8 +59,7 @@ The versions number should have the same format that the one returned by nmap. Y
 
 Privesc script must be written in bash for linux targets and in .bat or .ps1 for windows targets.
 
-# Licence
-
+## Licence
 
 The following tool is under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public licence.
 
