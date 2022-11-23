@@ -65,8 +65,10 @@ def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int
         if res is True:
             ('[+] Exploit was successful !')
             if compromission_recap_file_name:
-                with open(compromission_recap_file_name, 'w') as f:
-                    f.write('Plugin used for initial access : {}\n'.format(plugin_name))
+                with open(compromission_recap_file_name, 'w') as report:
+                    report.write('# IP2ROOT report\n\n')
+                    report.write('## IP address and Port\n`{}:{}`\n'.format(args.target_ip, target_port))
+                    report.write('## Vulnerability used for initial access\n`{}`\n'.format(plugin_name))
     except Exception as e:
         print(e)
 
@@ -86,7 +88,6 @@ def extract_ip() -> None | str:
         st.close()
     return IP
 
-
 if __name__ == '__main__':
 
     configs = read_plugins_configs()
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
     parser.add_argument('-rp', '--remote_port', type=int, required=False)
-    parser.add_argument('-o', '--output', type=str, help='output file name', required=False)
+    parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
     args = parser.parse_args()
 
 
@@ -127,3 +128,10 @@ if __name__ == '__main__':
                 exploit_process.join()
             else:
                 print('[-] No exploit available for this port')
+    if args.output :
+        print("[+] Report available in {}".format(args.output))
+    else : 
+        print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
+            
+    
+    
