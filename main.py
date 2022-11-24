@@ -95,8 +95,7 @@ def extract_ip() -> None | str:
         st.close()
     return IP
 
-if __name__ == '__main__':
-
+def main():
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
@@ -141,3 +140,7 @@ if __name__ == '__main__':
         print("[+] Report available in {}".format(args.output))
     else : 
         print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
+
+
+if __name__ == '__main__':
+    main()
