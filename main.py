@@ -11,6 +11,8 @@ from utils import *
 from plugins.initial_access import *
 import constants
 import privesc
+import docker
+import requests
 
 
 def read_plugins_configs() -> dict:
@@ -95,7 +97,39 @@ def extract_ip() -> None | str:
         st.close()
     return IP
 
-def main():
+def c2() -> None | str:
+    is_up = 0
+    client = docker.from_env()
+    if len(client.containers.list())-1 > 1:
+        for i in (0,len(client.containers.list())-1):
+            container = client.containers.get(client.containers.list(all=True, filters={'status':'running'})[i].__getattribute__('short_id'))
+            if "empire" in container.attrs['Config']['Image']:
+                is_up = 1
+        if is_up == 1:
+            return container.short_id
+        else:
+            deploy_c2()
+    else:
+        deploy_c2()            
+
+def deploy_c2():
+    url = 'https://localhost:1337/api/admin/login'
+    headers = {"Content-Type": "application/json"}
+    param = {"username":"empireadmin", "password":"password123"}
+
+    client = docker.from_env()
+    c2_container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '8888/tcp':8888},name='empire', detach=True)
+    print(c2_container.short_id)
+    print(dir(client.containers.list()))
+    #client.containers
+    #os.system('''curl -L https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage -o /tmp/starkiller && chmod +x /tmp/starkiller''')
+    
+    #r = requests.get(url, headers=headers, json=param)
+    #print(r.text)
+
+def main() -> None | str:
+    #c2_docker_id = c2()
+    #print(c2_docker_id)
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
