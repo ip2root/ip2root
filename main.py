@@ -30,7 +30,7 @@ def read_plugins_configs() -> dict:
                 'extrainfo' : config['DEFAULT']['extrainfo'],
                 'http_title' : config['DEFAULT']['http-title'],  
                 'CVE' : config['DEFAULT']['CVE'], 
-                'CVSS' : config['DEFAULT']['CVSS'] 
+                'CVSS' : config['DEFAULT']['CVSSv3'] 
             }
     return configs
 
