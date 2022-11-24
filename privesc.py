@@ -34,7 +34,7 @@ def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromissi
                 print('[+] Privesc exploit worked !')
                 if compromission_recap_file_name:
                     with open(compromission_recap_file_name, 'a') as c:
-                        c.write('Plugin used for priviledge escalation : {}'.format(f.split('/')[-1][:-3]))
+                        c.write('## Vulnerability used for priviledge escalation\n`{}`\n'.format(f.split('/')[-1][:-3]))
                 sleep(2)
                 sock.send('rm /tmp/valid_root\n')
                 sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
