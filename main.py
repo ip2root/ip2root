@@ -69,7 +69,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
             if compromission_recap_file_name:
                 with open(compromission_recap_file_name, 'w') as report:
                     report.write('# IP2ROOT report\n\n')
-                    report.write('## IP address and Port\n`{}:{}`\n'.format(args.target_ip, target_port))
+                    report.write('## IP address and Port\n`{}:{}`\n'.format(target_ip, target_port))
                     report.write('## Vulnerability used for initial access\n')
                     report.write('#### Service : `{}`\n'.format(safe_get(plugin_config, 'service')))
                     report.write('#### Version : `{}`\n'.format(safe_get(plugin_config, 'versions')))
