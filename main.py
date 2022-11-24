@@ -29,7 +29,7 @@ def read_plugins_configs() -> dict:
                 'versions' : config['DEFAULT']['versions'],
                 'extrainfo' : config['DEFAULT']['extrainfo'],
                 'http_title' : config['DEFAULT']['http-title'],  
-                'CVE' : config['DEFAULT']['CVS'], 
+                'CVE' : config['DEFAULT']['CVE'], 
                 'CVSS' : config['DEFAULT']['CVSS'] 
             }
     return configs
@@ -57,7 +57,7 @@ def listener(listener_port: int, listener_address: str, compromission_recap_file
         sock.close()
 
 
-def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str) -> None:
+def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str) -> None:
     """
     Run an initial access plugin
     """
@@ -70,7 +70,12 @@ def run_initial_access_plugin(plugin_name: str, target_ip: str, target_port: int
                 with open(compromission_recap_file_name, 'w') as report:
                     report.write('# IP2ROOT report\n\n')
                     report.write('## IP address and Port\n`{}:{}`\n'.format(args.target_ip, target_port))
-                    report.write('## Vulnerability used for initial access\n`{}`\n'.format(plugin_name))
+                    print(plugin_config)
+                    print(safe_get(plugin_config, 'CVE'))
+                    if safe_get(plugin_config, 'CVE'):
+                        report.write('## Vulnerability used for initial access\n`{}`\n'.format(plugin_name))
+                        report.write('CVE: {}\n'.format(safe_get(plugin_config, 'CVE')))
+                        report.write('CVSS: {}\n'.format(safe_get(plugin_config, 'CVSS')))
     except Exception as e:
         print(e)
 
@@ -120,11 +125,13 @@ if __name__ == '__main__':
     for i in res_recon:
         print('[+] Looking for exploits for port {}'.format(i['port']))
         for plugin_name, values in configs.items():
-            if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
+            if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) \
+            or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) \
+            or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()
-                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output))
+                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output))
                 exploit_process.start()
                 listener_process.join()
                 exploit_process.join()
