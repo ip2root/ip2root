@@ -28,7 +28,9 @@ def read_plugins_configs() -> dict:
                 'service' : config['DEFAULT']['service'],
                 'versions' : config['DEFAULT']['versions'],
                 'extrainfo' : config['DEFAULT']['extrainfo'],
-                'http_title' : config['DEFAULT']['http-title']   
+                'http_title' : config['DEFAULT']['http-title'],  
+                'CVE' : config['DEFAULT']['CVS'], 
+                'CVSS' : config['DEFAULT']['CVSS'] 
             }
     return configs
 
@@ -132,6 +134,3 @@ if __name__ == '__main__':
         print("[+] Report available in {}".format(args.output))
     else : 
         print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
-            
-    
-    
