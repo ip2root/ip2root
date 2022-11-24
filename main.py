@@ -69,13 +69,14 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
             if compromission_recap_file_name:
                 with open(compromission_recap_file_name, 'w') as report:
                     report.write('# IP2ROOT report\n\n')
-                    report.write('## IP address and Port\n`{}:{}`\n'.format(args.target_ip, target_port))
-                    print(plugin_config)
-                    print(safe_get(plugin_config, 'CVE'))
+                    report.write('## IP address and Port\n`{}:{}`\n'.format(target_ip, target_port))
+                    report.write('## Vulnerability used for initial access\n')
+                    report.write('#### Service : `{}`\n'.format(safe_get(plugin_config, 'service')))
+                    report.write('#### Version : `{}`\n'.format(safe_get(plugin_config, 'versions')))
                     if safe_get(plugin_config, 'CVE'):
-                        report.write('## Vulnerability used for initial access\n`{}`\n'.format(plugin_name))
-                        report.write('CVE: {}\n'.format(safe_get(plugin_config, 'CVE')))
-                        report.write('CVSSv3: {}\n'.format(safe_get(plugin_config, 'CVSSv3')))
+                        report.write('#### CVE : `{}`\n'.format(safe_get(plugin_config, 'CVE')))
+                    if safe_get(plugin_config, 'CVSSv3'):
+                        report.write('#### CVSSv3 : `{}`\n'.format(safe_get(plugin_config, 'CVSSv3')))
     except Exception as e:
         print(e)
 
@@ -95,8 +96,7 @@ def extract_ip() -> None | str:
         st.close()
     return IP
 
-if __name__ == '__main__':
-
+def main():
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
@@ -141,3 +141,7 @@ if __name__ == '__main__':
         print("[+] Report available in {}".format(args.output))
     else : 
         print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
+
+
+if __name__ == '__main__':
+    main()
