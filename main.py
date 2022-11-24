@@ -70,12 +70,13 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
                 with open(compromission_recap_file_name, 'w') as report:
                     report.write('# IP2ROOT report\n\n')
                     report.write('## IP address and Port\n`{}:{}`\n'.format(args.target_ip, target_port))
-                    print(plugin_config)
-                    print(safe_get(plugin_config, 'CVE'))
+                    report.write('## Vulnerability used for initial access\n')
+                    report.write('#### Service : `{}`\n'.format(safe_get(plugin_config, 'service')))
+                    report.write('#### Version : `{}`\n'.format(safe_get(plugin_config, 'versions')))
                     if safe_get(plugin_config, 'CVE'):
-                        report.write('## Vulnerability used for initial access\n`{}`\n'.format(plugin_name))
-                        report.write('CVE: {}\n'.format(safe_get(plugin_config, 'CVE')))
-                        report.write('CVSS: {}\n'.format(safe_get(plugin_config, 'CVSS')))
+                        report.write('#### CVE : `{}`\n'.format(safe_get(plugin_config, 'CVE')))
+                    if safe_get(plugin_config, 'CVSS'):
+                        report.write('#### CVSS : `{}`\n'.format(safe_get(plugin_config, 'CVSS')))
     except Exception as e:
         print(e)
 
