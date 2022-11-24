@@ -30,7 +30,7 @@ def read_plugins_configs() -> dict:
                 'extrainfo' : config['DEFAULT']['extrainfo'],
                 'http_title' : config['DEFAULT']['http-title'],  
                 'CVE' : config['DEFAULT']['CVE'], 
-                'CVSS' : config['DEFAULT']['CVSS'] 
+                'CVSSv3' : config['DEFAULT']['CVSSv3'] 
             }
     return configs
 
@@ -75,8 +75,8 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
                     report.write('#### Version : `{}`\n'.format(safe_get(plugin_config, 'versions')))
                     if safe_get(plugin_config, 'CVE'):
                         report.write('#### CVE : `{}`\n'.format(safe_get(plugin_config, 'CVE')))
-                    if safe_get(plugin_config, 'CVSS'):
-                        report.write('#### CVSS : `{}`\n'.format(safe_get(plugin_config, 'CVSS')))
+                    if safe_get(plugin_config, 'CVSSv3'):
+                        report.write('#### CVSSv3 : `{}`\n'.format(safe_get(plugin_config, 'CVSSv3')))
     except Exception as e:
         print(e)
 
