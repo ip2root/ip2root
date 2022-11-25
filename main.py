@@ -13,6 +13,8 @@ import constants
 import privesc
 import docker
 import requests
+from time import sleep
+import json
 
 
 def read_plugins_configs() -> dict:
@@ -101,36 +103,53 @@ def extract_ip() -> None | str:
 def c2() -> None | str:
     is_up = 0
     client = docker.from_env()
-    if len(client.containers.list())-1 > 1:
-        for i in (0,len(client.containers.list())-1):
-            container = client.containers.get(client.containers.list(all=True, filters={'status':'running'})[i].__getattribute__('short_id'))
+    if len(client.containers.list(all))-1 > 1:
+        for i in (0,len(client.containers.list(all))-1):
+            container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
             if "empire" in container.attrs['Config']['Image']:
                 is_up = 1
-        if is_up == 1:
-            return container.short_id
-        else:
-            deploy_c2()
+                client.containers.list(all)[i].start()
+                sleep(25)
+                token = c2_token()
+                print('[+] C2 started successfully from existing docker (ID: {0}'.format(client.containers.list(all)[i].short_id))
+                print('[+] Listening on port 8888 (CLIHTTP)')
+                return client.containers.list(all)[i].short_id, token
+        if is_up == 0:
+            infos = deploy_c2()
+            return infos
     else:
-        deploy_c2()            
+        infos = deploy_c2()  
+        return infos          
 
 def deploy_c2():
-    url = 'https://localhost:1337/api/admin/login'
-    headers = {"Content-Type": "application/json"}
-    param = {"username":"empireadmin", "password":"password123"}
+    if not os.path.exists('/tmp/starkiller'):
+        url_starkiller = 'https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage'
+        r_github = requests.get(url_starkiller, allow_redirects=True)
+        open('/tmp/starkiller', 'wb').write(r_github.content)
 
     client = docker.from_env()
-    c2_container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '8888/tcp':8888},name='empire', detach=True)
-    print(c2_container.short_id)
-    print(dir(client.containers.list()))
-    #client.containers
-    #os.system('''curl -L https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage -o /tmp/starkiller && chmod +x /tmp/starkiller''')
-    
-    #r = requests.get(url, headers=headers, json=param)
-    #print(r.text)
+    container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '8888/tcp':8888}, name='empire', tty=True, detach=True)
+    sleep(20)
+
+    token = c2_token()
+    print('[+] C2 docker created successfully (Docker ID : {0}'.format(container.short_id))
+    print('[+] Listener created on port 8888 (CLIHTTP)')
+    return container.short_id, token
+
+def c2_token():
+    url_c2 = 'https://localhost:1337/api/admin/login'
+    headers = {"Content-Type": "application/json"}
+    param = {"username":"empireadmin", "password":"password123"}
+    r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
+    json_token = json.loads(r_c2.text)
+    token = json_token['token']
+    url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
+    param_listener = {"Name":"CLIHTTP", "Port":"8888"}
+    r_listener = requests.post(url_listener, headers=headers, json=param_listener, verify=False)
+    return token
 
 def main() -> None | str:
-    #c2_docker_id = c2()
-    #print(c2_docker_id)
+    c2_infos = c2()
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
