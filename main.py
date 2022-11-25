@@ -126,11 +126,9 @@ def deploy_c2():
         url_starkiller = 'https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage'
         r_github = requests.get(url_starkiller, allow_redirects=True)
         open('/tmp/starkiller', 'wb').write(r_github.content)
-
     client = docker.from_env()
     container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '8888/tcp':8888}, name='empire', tty=True, detach=True)
     sleep(20)
-
     token = c2_token()
     print('[+] C2 docker created successfully (Docker ID : {0}'.format(container.short_id))
     print('[+] Listener created on port 8888 (CLIHTTP)')
@@ -149,7 +147,6 @@ def c2_token():
     return token
 
 def main() -> None | str:
-    c2_infos = c2()
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
@@ -158,8 +155,11 @@ def main() -> None | str:
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
     parser.add_argument('-rp', '--remote_port', type=int, required=False)
     parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
+    parser.add_argument('-c2', '--c2', action='store_true', help='deploy a c2', required=False)
     args = parser.parse_args()
 
+    if args.c2:
+        c2_infos = c2()
 
     if args.local_ip == None:
         LOCAL_IP = extract_ip()

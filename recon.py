@@ -12,8 +12,7 @@ def nmap_scan(ip: str, port: int | None) -> list:
     print('[+] Running nmap scan on {}'.format(ip))
     nmap_proc.run()
     open_ports = parse_nmap_xml(nmap_proc.stdout)
-    for i in open_ports:
-        print(i)
+
     res_recon = []
     for port in open_ports:
         print('[+] Detected port {} {} : {} {} {} {}'.format(port['port_num'], port['state'], port['protocol'], port['service_type'], port['product_name'], port['product_version'], safe_get(port, 'extrainfo')))
