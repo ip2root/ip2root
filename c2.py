@@ -3,8 +3,8 @@ import os
 import subprocess
 import requests
 import json
-from time import sleep
 import base64
+from time import sleep
 
 def c2() -> None | str:
     is_up = 0
@@ -15,7 +15,7 @@ def c2() -> None | str:
             if "empire" in container.attrs['Config']['Image']:
                 is_up = 1
                 container = client.containers.list(all)[i].start()
-                container.wait()
+                sleep(25)
                 token = c2_token()
                 print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
                 print('[+] C2 token : {0}'.format(token))
@@ -55,13 +55,11 @@ def c2_token():
     c2_listener(token)
     return token
 
-
 def c2_listener(token):
     url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
     param_listener = {"Name":"CLIHTTP", "Port":"8888"}
     headers = {"Content-Type": "application/json"}
     requests.post(url_listener, headers=headers, json=param_listener, verify=False)
-
 
 def get_stager(system, token):
     if system == 'linux':
