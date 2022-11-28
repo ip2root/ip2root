@@ -14,8 +14,8 @@ def c2() -> None | str:
             container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
             if "empire" in container.attrs['Config']['Image']:
                 is_up = 1
-                client.containers.list(all)[i].start()
-                sleep(25)
+                container = client.containers.list(all)[i].start()
+                container.wait()
                 token = c2_token()
                 print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
                 print('[+] C2 token : {0}'.format(token))
@@ -34,7 +34,7 @@ def starkiller():
         r_github = requests.get(url_starkiller, allow_redirects=True)
         open('/tmp/starkiller', 'wb').write(r_github.content)
     subprocess.Popen(["chmod", "+x", "/tmp/starkiller"])
-    #subprocess.Popen(["/tmp/starkiller"])
+    subprocess.Popen(["/tmp/starkiller"])
 
 def deploy_c2():
     client = docker.from_env()
@@ -52,10 +52,16 @@ def c2_token():
     r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
     json_token = json.loads(r_c2.text)
     token = json_token['token']
+    c2_listener(token)
+    return token
+
+
+def c2_listener(token):
     url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
     param_listener = {"Name":"CLIHTTP", "Port":"8888"}
-    r_listener = requests.post(url_listener, headers=headers, json=param_listener, verify=False)
-    return token
+    headers = {"Content-Type": "application/json"}
+    requests.post(url_listener, headers=headers, json=param_listener, verify=False)
+
 
 def get_stager(system, token):
     if system == 'linux':
