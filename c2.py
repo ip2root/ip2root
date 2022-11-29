@@ -7,6 +7,7 @@ import base64
 from time import sleep
 
 def c2() -> None | str:
+    check_docker()
     is_up = False
     client = docker.from_env()
     if len(client.containers.list(all))-1 > 1:
@@ -31,6 +32,16 @@ def c2() -> None | str:
     else:
         infos = deploy_c2() 
         return infos
+
+def check_docker():
+    res_docker = subprocess.check_output('which docker', shell=True, universal_newlines=True)
+    if 'docker' not in res_docker:
+        print('[-] Docker is not installed on your system. Please intall it from https://docs.docker.com')
+        exit
+    res_group = subprocess.check_output('id -nG "$(whoami)" | grep -qw "docker" && echo 1 || echo 0', shell=True, universal_newlines=True)
+    if '1' not in res_group:
+        print('[-] Your current user is not part of the docker group. Add it or start ip2root with a user that is part of the docker group.')
+        exit
 
 def starkiller():
     STARKILLER_PATH = '/tmp/starkiller'
