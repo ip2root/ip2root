@@ -2,7 +2,8 @@
 
 This tool aims to provide a root shell from a simple IP.
 
-WARNING : The tool is currently in an early state of release. You can track progress [here](https://github.com/orgs/ip2root/projects/1)
+:warning: WARNING :warning: : This tool is currently in an development. You can track progress [here](https://github.com/orgs/ip2root/projects/1)
+Pull requests are welcome.
 
 ## DISCLAIMER
 
@@ -42,13 +43,15 @@ Any contribution would be appreciated (improvement, new exploits, etc.).
 
 ### Initial access plugin
 
-Name your python file like this `serviceversionvuln.py` ex: `apache2_4_49RCE.py`, create a config file with the same name but ending with `.ini` and place them in the `plugins/initial_access` directory. The config file should match the following format :
+Name your python file like this `service_version_vuln.py` ex: `apache_2_4_49_rce.py`, create a config file with the same name but ending with `.ini` and place them in the `plugins/initial_access` directory. The config file should match the following format :
 
 ```ini
 [DEFAULT]
 plugin_name = <name of your plugin>
 service = <name of the vulnerable service>
 versions = <versions number>
+extrainfo = <extra information>
+http-title = <page title>
 CVE = <CVE reference>
 CVSS = <CVSS score>
 ```
@@ -60,7 +63,7 @@ CVSS = <CVSS score>
 
 ### Privesc plugins
 
-Privesc script must be written in bash for linux targets and in .bat or .ps1 for windows targets.
+Privesc scripts must be written in bash for linux targets and in .bat or .ps1 for windows targets.
 
 ## Licence
 
