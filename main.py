@@ -130,10 +130,12 @@ def main() -> None | str:
     
     for i in res_recon:
         print('[+] Looking for exploits for port {}'.format(i['port']))
+        exploit_available = False
         for plugin_name, values in configs.items():
             if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) \
             or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) \
             or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
+                exploit_available = True
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()
@@ -141,8 +143,8 @@ def main() -> None | str:
                 exploit_process.start()
                 listener_process.join()
                 exploit_process.join()
-            else:
-                print('[-] No exploit available for this port')
+        if not exploit_available:
+            print('[-] No exploit available for this port')
     if args.output :
         print("[+] Report available in {}".format(args.output))
     else : 
