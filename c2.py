@@ -6,7 +6,7 @@ import json
 import base64
 from time import sleep
 
-def c2() -> None | str:
+def c2(LOCAL_IP) -> None | str:
     check_docker()
     is_up = False
     client = docker.from_env()
@@ -27,10 +27,10 @@ def c2() -> None | str:
                 print('[+] Listening on port 8888 (CLIHTTP)')
                 return client.containers.list(all)[i].short_id, token
         if is_up == False:
-            infos = deploy_c2()
+            infos = deploy_c2(LOCAL_IP)
             return infos
     else:
-        infos = deploy_c2() 
+        infos = deploy_c2(LOCAL_IP) 
         return infos
 
 def check_docker():
@@ -51,9 +51,9 @@ def starkiller():
         r_github = requests.get(STARKILLER_URL, allow_redirects=True)
         open(STARKILLER_PATH, 'wb').write(r_github.content)
     subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
-    subprocess.Popen([STARKILLER_PATH])
+    #subprocess.Popen([STARKILLER_PATH])
 
-def deploy_c2():
+def deploy_c2(LOCAL_IP):
     print('[+] Deploying C2 container')
     C2_LISTENER_PORT = 8888
     client = docker.from_env()
@@ -63,6 +63,7 @@ def deploy_c2():
             sleep(10)
             break
     token = c2_token()
+    c2_listener(token, LOCAL_IP)
     print('[+] C2 container created successfully (Docker ID : {0}'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
     return container.short_id, token
@@ -74,12 +75,11 @@ def c2_token():
     r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
     json_token = json.loads(r_c2.text)
     token = json_token['token']
-    c2_listener(token)
     return token
 
-def c2_listener(token):
+def c2_listener(token, LOCAL_IP):
     url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
-    param_listener = {"Name":"CLIHTTP", "Port":"8888"}
+    param_listener = {"Name":"CLIHTTP", "Port":"8888", "Host":"{0}".format(LOCAL_IP)}
     headers = {"Content-Type": "application/json"}
     requests.post(url_listener, headers=headers, json=param_listener, verify=False)
 

