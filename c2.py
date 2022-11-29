@@ -35,7 +35,7 @@ def check_docker():
     if 'docker' not in res_docker:
         print('[-] Docker is not installed on your system. Please intall it from https://docs.docker.com')
         exit
-    res_group = subprocess.check_output('id -nG "$(whoami)" | grep -qw "docker" && echo 1 || echo 0', shell=True, universal_newlines=True)
+    res_group = subprocess.check_output('id -nG "$(whoami)" | grep -qw "docker" && echo 1 || id | grep -qw "root" && echo 1 || echo 0', shell=True, universal_newlines=True)
     if '1' not in res_group:
         print('[-] Your current user is not part of the docker group. Add it or start ip2root with a user that is part of the docker group.')
         exit
