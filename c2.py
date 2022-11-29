@@ -5,6 +5,10 @@ import requests
 import json
 import base64
 from time import sleep
+import urllib3
+import sys
+import more_itertools
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP) -> None | str:
     check_docker()
@@ -17,17 +21,22 @@ def c2(LOCAL_IP) -> None | str:
             print('[+] Detected an existing C2 container')
             is_up = True
             client.containers.list(all)[i].start()
-            while True:
-                if '[+] Plugin csharpserver ran successfully!' in str(container.logs()):
-                    sleep(10)
+            for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
+                logs = '   ' + str(container.logs(tail=1).decode('utf-8'))
+                sys.stdout.write('\033[2K\r[+] Starting the Docker... ' + c)
+                if "WARNING: your terminal doesn't support" not in logs:
+                    sys.stdout.write((logs.replace('\r', '')).replace('\n', ''))
+                sys.stdout.flush()
+                sleep(0.1)
+                if 'Plugin csharpserver ran successfully!' in container.logs(tail=3).decode('utf-8'):
+                    print('\n[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
                     break
             token = c2_token()
-            print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
             print('[+] C2 token : {0}'.format(token))
             print('[+] Listening on port 8888 (CLIHTTP)')
             return client.containers.list(all)[i].short_id, token
     if not is_up:
-        infos = deploy_c2()
+        infos = deploy_c2(LOCAL_IP)
         return infos
 
 def check_docker():
@@ -55,13 +64,18 @@ def deploy_c2(LOCAL_IP):
     C2_LISTENER_PORT = 8888
     client = docker.from_env()
     container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
-    while True:
-        if '[+] Plugin csharpserver ran successfully!' in str(container.logs()):
-            sleep(10)
+    for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
+        logs = '   ' + str(container.logs(tail=1).decode('utf-8'))
+        sys.stdout.write('\033[2K\r[+] Starting the Docker... ' + c)
+        sys.stdout.write((logs.replace('\r', '').replace('\n', '')))
+        sys.stdout.flush()
+        sleep(0.1)
+        if 'Plugin csharpserver ran successfully!' in logs:
+            print('\n[+] C2 created successfully')
             break
     token = c2_token()
     c2_listener(token, LOCAL_IP)
-    print('[+] C2 container created successfully (Docker ID : {0}'.format(container.short_id))
+    print('[+] C2 container created successfully (Docker ID : {0})'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
     return container.short_id, token
 
