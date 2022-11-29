@@ -7,22 +7,25 @@ import base64
 from time import sleep
 
 def c2() -> None | str:
-    is_up = 0
+    is_up = False
     client = docker.from_env()
     if len(client.containers.list(all))-1 > 1:
         for i in (0,len(client.containers.list(all))-1):
             container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
             if "empire" in container.attrs['Config']['Image']:
                 print('[+] Detected an existing C2 container')
-                is_up = 1
-                container = client.containers.list(all)[i].start()
-                sleep(25)
+                is_up = True
+                client.containers.list(all)[i].start()
+                while True:
+                    if '[+] Plugin csharpserver ran successfully!' in str(container.logs()):
+                        sleep(10)
+                        break
                 token = c2_token()
                 print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
                 print('[+] C2 token : {0}'.format(token))
                 print('[+] Listening on port 8888 (CLIHTTP)')
                 return client.containers.list(all)[i].short_id, token
-        if is_up == 0:
+        if is_up == False:
             infos = deploy_c2()
             return infos
     else:
@@ -44,7 +47,10 @@ def deploy_c2():
     C2_LISTENER_PORT = 8888
     client = docker.from_env()
     container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
-    container.wait() # Does not wait everytime
+    while True:
+        if '[+] Plugin csharpserver ran successfully!' in str(container.logs()):
+            sleep(10)
+            break
     token = c2_token()
     print('[+] C2 container created successfully (Docker ID : {0}'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
