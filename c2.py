@@ -10,26 +10,22 @@ def c2() -> None | str:
     check_docker()
     is_up = False
     client = docker.from_env()
-    if len(client.containers.list(all))-1 > 1:
-        for i in (0,len(client.containers.list(all))-1):
-            container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
-            if "empire" in container.attrs['Config']['Image']:
-                print('[+] Detected an existing C2 container')
-                is_up = True
-                client.containers.list(all)[i].start()
-                while True:
-                    if '[+] Plugin csharpserver ran successfully!' in str(container.logs()):
-                        sleep(10)
-                        break
-                token = c2_token()
-                print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
-                print('[+] C2 token : {0}'.format(token))
-                print('[+] Listening on port 8888 (CLIHTTP)')
-                return client.containers.list(all)[i].short_id, token
-        if is_up == False:
-            infos = deploy_c2()
-            return infos
-    else:
+    for i in range(len(client.containers.list(all))):
+        container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
+        if "empire" in container.attrs['Config']['Image']:
+            print('[+] Detected an existing C2 container')
+            is_up = True
+            client.containers.list(all)[i].start()
+            while True:
+                if '[+] Plugin csharpserver ran successfully!' in str(container.logs()):
+                    sleep(10)
+                    break
+            token = c2_token()
+            print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
+            print('[+] C2 token : {0}'.format(token))
+            print('[+] Listening on port 8888 (CLIHTTP)')
+            return client.containers.list(all)[i].short_id, token
+    if not is_up:
         infos = deploy_c2() 
         return infos
 
