@@ -37,6 +37,18 @@ pip3 install -r requirements.txt
 python3 main.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
 ```
 
+### Troubleshooting
+
+#### Masscan
+
+If you have encounter the following error message
+```shell=
+[-] FAIL: permission denied
+    [hint] need to sudo or run as root or something
+[-] if:wlp1s0:init: failed
+```
+This means you need to add `CAP_NET_RAW` to masscan to be able to run it without being root. You can use the following command to do so : `sudo setcap CAP_NET_RAW+ep <masscan path>`
+
 ## How to contribute
 
 Any contribution would be appreciated (improvement, new exploits, etc.).
