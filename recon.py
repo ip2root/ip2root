@@ -10,7 +10,6 @@ def nmap_scan(targets_open_ports: dict) -> list:
     res_nmap_scans = []
     for target_ip, ports in targets_open_ports.items():
         formated_ports = list(map(str,ports))
-        print(formated_ports)
         nmap_proc = NmapProcess(target_ip, '-A -p {}'.format(','.join(formated_ports)))
         print('[+] Running nmap scan on {}'.format(target_ip))
         nmap_proc.run()
@@ -44,9 +43,7 @@ def masscan_scan(targets: str) -> list:
     """
     print('[+] Running masscan on {}'.format(targets))
     mas = masscan.PortScanner()
-    print('targets :'+targets)
     mas.scan(targets, ports='0-65535', arguments='--max-rate 1000000')
-    print(mas.scan_result)
     targets_open_ports = {}
     masscan_results = json.loads(mas.scan_result)['scan']
     for ip, ports in masscan_results.items():

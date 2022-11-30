@@ -126,7 +126,6 @@ def main() -> None | str:
     validate_ip_address(LOCAL_IP)
     
     res_masscan = recon.masscan_scan(args.target_ip)
-    print(res_masscan)
     no_ports_open = True
     for target, ports in res_masscan.items():
         if len(ports) > 0:
