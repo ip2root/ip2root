@@ -125,16 +125,18 @@ def main() -> None | str:
     validate_ip_address(args.target_ip)
     validate_ip_address(LOCAL_IP)
     
-    res_masscan = recon.masscan_scan(args.target_ip)
-    no_ports_open = True
-    for target, ports in res_masscan.items():
-        if len(ports) > 0:
-            no_ports_open = False
-            break
-    if no_ports_open:
-        sys.exit('[-] Error: No open ports found')
-
-    res_recon = recon.nmap_scan(res_masscan)
+    if args.remote_port:
+        res_recon = recon.nmap_scan({args.target_ip:[args.remote_port]})
+    else:
+        res_masscan = recon.masscan_scan(args.target_ip)
+        no_ports_open = True
+        for target, ports in res_masscan.items():
+            if len(ports) > 0:
+                no_ports_open = False
+                break
+        if no_ports_open:
+            sys.exit('[-] Error: No open ports found by masscan')
+        res_recon = recon.nmap_scan(res_masscan)
 
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
