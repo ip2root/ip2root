@@ -10,6 +10,7 @@ from utils import *
 from plugins.initial_access import *
 import constants
 import c2
+from pyfiglet import Figlet
 
 def read_plugins_configs() -> dict:
     """
@@ -76,6 +77,13 @@ def extract_ip() -> None | str:
 
 
 def main() -> None | str:
+
+    f = Figlet(font='slant')
+    print(f.renderText('IP2ROOT'))
+    print('\033[1m' + 'By 0xblank, Steels, Lebansx, Koko' + '\033[0m\n')
+    print('\033[1m' + '/!\ DISCLAIMER /!\ ' + '\033[0m')
+    print("The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on. We are not responsible of the actions done by your usage of the tool.\n")
+
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
@@ -86,7 +94,6 @@ def main() -> None | str:
     parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
     args = parser.parse_args()
 
-    
 
     if args.local_ip == None:
         LOCAL_IP = extract_ip()
@@ -96,8 +103,8 @@ def main() -> None | str:
     # validate IP addresses' format
     validate_ip_address(args.target_ip)
     validate_ip_address(LOCAL_IP)
-    
-    # deploy c2 and start client
+
+        # deploy c2 and start client
     c2_infos = c2.c2(LOCAL_IP)
     c2.starkiller()
 
