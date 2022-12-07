@@ -110,6 +110,7 @@ def main() -> None | str:
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
     parser.add_argument('-rp', '--remote_port', type=int, required=False)
     parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
+    parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
     args = parser.parse_args()
 
     # deploy c2 and start client
@@ -128,7 +129,7 @@ def main() -> None | str:
     if args.remote_port:
         res_recon = recon.nmap_scan({args.target_ip:[args.remote_port]})
     else:
-        res_masscan = recon.masscan_scan(args.target_ip)
+        res_masscan = recon.masscan_scan(args.target_ip, args.fast_scan)
         no_ports_open = True
         for target, ports in res_masscan.items():
             if len(ports) > 0:
