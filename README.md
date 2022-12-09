@@ -70,6 +70,7 @@ extrainfo = <extra information>
 http-title = <page title>
 CVE = <CVE reference>
 CVSS = <CVSS score>
+OS = <target OS>
 ```
 
 * The plugin_name should be the exact same as your python file (case sensitive).
