@@ -47,8 +47,8 @@ def c2(LOCAL_IP) -> None | str:
         return infos
 
 def password(status):
+    print('[+] Username to access the C2 : empireadmin')
     if status == True:
-        print('[+] Username to access the C2 : empireadmin')
         password = getpass.getpass('[!] Enter your password to access the C2 : ')
     else:
         while True:
