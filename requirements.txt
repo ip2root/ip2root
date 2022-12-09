@@ -4,8 +4,10 @@ certifi==2022.9.14
 charset-normalizer==2.1.1
 docker==6.0.1
 idna==3.4
+more-itertools==9.0.0
 nmap==0.0.1
 packaging==21.3
+pyfiglet==0.8.post1
 pyparsing==3.0.9
 python-libnmap==0.7.2
 python-masscan==1.0.0
