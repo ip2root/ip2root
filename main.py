@@ -136,11 +136,8 @@ def main() -> None | str:
                 or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
                     exploit_available = True
                     target_port = i['port']
-                    listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
-                    listener_process.start()
                     exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[1]))
                     exploit_process.start()
-                    listener_process.join()
                     exploit_process.join()
             if not exploit_available:
                 print('[-] No exploit available for this port')
