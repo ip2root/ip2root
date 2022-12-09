@@ -19,7 +19,7 @@ def c2(LOCAL_IP) -> None | str:
 
     for i in range(len(client.containers.list(all))):
         container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
-        if "empire" in container.attrs['Config']['Image']:
+        if "bcsecurity/empire" in container.attrs['Config']['Image']:
             print('[+] Detected an existing C2 container')
             is_up = True
             client.containers.list(all)[i].start()
@@ -35,7 +35,7 @@ def c2(LOCAL_IP) -> None | str:
                     break
             print('[+] Listening on port 8888 (CLIHTTP)')
             while True:
-                passc2 = password(True)
+                passc2 = get_password(True)
                 token = c2_token(passc2)
                 if token == False:
                     print('[-] Wrong password. Please try again.')
@@ -46,7 +46,7 @@ def c2(LOCAL_IP) -> None | str:
         infos = deploy_c2(LOCAL_IP)
         return infos
 
-def password(status):
+def get_password(status):
     print('[+] Username to access the C2 : empireadmin')
     if status == True:
         password = getpass.getpass('[!] Enter your password to access the C2 : ')
@@ -101,7 +101,7 @@ def starkiller():
 
 def deploy_c2(LOCAL_IP):
     print('[+] Deploying C2 container')
-    passc2 = password(False)
+    passc2 = get_password(False)
     C2_LISTENER_PORT = 8888
     client = docker.from_env()
     container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
@@ -154,6 +154,6 @@ def get_stager(system, token):
     payload = json.loads(r_stager.text)
     payload = payload[system]['Output']
     message_bytes = payload.encode('ascii')
-    rs_b64 = base64.b64encode(message_bytes)
+    stager_b64 = base64.b64encode(message_bytes)
 
-    return rs_b64
+    return stager_b64

