@@ -52,7 +52,6 @@ def password(status):
         password = getpass.getpass('[!] Enter your password to access the C2 : ')
     else:
         while True:
-            print('[+] Username to access the C2 : empireadmin')
             password = getpass.getpass('[!] Create a password to access the C2 : ')
             confirm_password = getpass.getpass('[!] Confirm the password : ')
             if password == confirm_password:
@@ -90,7 +89,6 @@ def starkiller():
                     done = int(50 * dl / total_length)
                     sys.stdout.write("\r[.] [%s%s]" % ('#' * done, ' ' * (50-done)) )    
                     sys.stdout.flush()
-                print('\n')
     STARKILLER_RUNNING = False
     for i in psutil.pids():
         p = psutil.Process(i)
