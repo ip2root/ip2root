@@ -73,8 +73,21 @@ def starkiller():
     if not os.path.exists(STARKILLER_PATH):
         STARKILLER_URL = 'https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage'
         print('[+] Downloading starkiller in {} from {}'.format(STARKILLER_PATH, STARKILLER_URL))
-        r_github = requests.get(STARKILLER_URL, allow_redirects=True)
-        open(STARKILLER_PATH, 'wb').write(r_github.content)
+        with open(STARKILLER_PATH, 'wb') as f:
+            response = requests.get(STARKILLER_URL, stream=True, allow_redirects=True)
+            total_length = response.headers.get('content-length')
+            if total_length is None:
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[.] [%s%s]" % ('=>' * done, ' ' * (50-done)) )    
+                    sys.stdout.flush()
+    print('\n')
     subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
     subprocess.Popen([STARKILLER_PATH])
 

