@@ -1,11 +1,15 @@
-# IP2ROOT
+![](https://md.floppy.sh/uploads/ab5e7ff1-3d92-4aa5-8166-54c88929e94e.png)
+
+![Python minimum version](https://img.shields.io/badge/Python-3.10%2B-brightgreen)
+
+## Description
 
 This tool aims to provide a root shell from a simple IP.
 
-:warning: WARNING :warning: : This tool is currently in an development. You can track progress [here](https://github.com/orgs/ip2root/projects/1)
+:warning: WARNING :warning: : This tool is currently in development. You can track progress [here](https://github.com/orgs/ip2root/projects/1)
 Pull requests are welcome.
 
-## DISCLAIMER
+## Disclaimer
 
 The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on.
 We are not responsible of the actions done by your usage of the tool.

