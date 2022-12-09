@@ -9,6 +9,7 @@ import urllib3
 import sys
 import more_itertools
 import getpass
+import psutil
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP) -> None | str:
@@ -87,11 +88,18 @@ def starkiller():
                     dl += len(data)
                     f.write(data)
                     done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[.] [%s%s]" % ('=>' * done, ' ' * (50-done)) )    
+                    sys.stdout.write("\r[.] [%s%s]" % ('#' * done, ' ' * (50-done)) )    
                     sys.stdout.flush()
     print('\n')
-    subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
-    subprocess.Popen([STARKILLER_PATH])
+    STARKILLER_RUNNING = False
+    for i in psutil.pids():
+        p = psutil.Process(i)
+        if 'starkiller' in p.name():
+            STARKILLER_RUNNING = True
+            break
+    if STARKILLER_RUNNING == False:
+        subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
+        subprocess.Popen([STARKILLER_PATH])
 
 def deploy_c2(LOCAL_IP):
     print('[+] Deploying C2 container')
