@@ -37,7 +37,7 @@ def nmap_scan(targets_open_ports: dict) -> list:
         res_nmap_scans.append(res_scan)
     return res_nmap_scans
 
-def masscan_scan(targets: str, fast_mode: bool) -> list:
+def masscan_scan(targets: str, fast_mode: bool) -> dict:
     """
     Run masscan scan and return a list of open ports
     """
