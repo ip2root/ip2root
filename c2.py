@@ -90,7 +90,7 @@ def starkiller():
                     done = int(50 * dl / total_length)
                     sys.stdout.write("\r[.] [%s%s]" % ('#' * done, ' ' * (50-done)) )    
                     sys.stdout.flush()
-    print('\n')
+                print('\n')
     STARKILLER_RUNNING = False
     for i in psutil.pids():
         p = psutil.Process(i)
