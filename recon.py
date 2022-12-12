@@ -37,18 +37,20 @@ def nmap_scan(targets_open_ports: dict) -> list:
         res_nmap_scans.append(res_scan)
     return res_nmap_scans
 
-def masscan_scan(targets: str, fast_mode: bool) -> dict:
+def masscan_scan(targets_ip: str, fast_mode: bool, target_ports:str) -> dict:
     """
     Run masscan scan and return a list of open ports
     """
 
+    if not target_ports:
+        target_ports = '0-65535'
     if fast_mode :
         arguments = '--max-rate 1000000'
     else:
         arguments = ''
-    print('[+] Running masscan on {}'.format(targets))
+    print('[+] Running masscan on {} on ports {}'.format(targets_ip, target_ports))
     mas = masscan.PortScanner()
-    mas.scan(targets, ports='0-65535', arguments=arguments)
+    mas.scan(targets_ip, ports=target_ports, arguments=arguments)
     targets_open_ports = {}
     masscan_results = json.loads(mas.scan_result)['scan']
     for ip, ports in masscan_results.items():

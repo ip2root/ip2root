@@ -12,6 +12,7 @@ from plugins.initial_access import *
 import constants
 import c2
 from pyfiglet import Figlet
+import ipaddress
 
 def read_plugins_configs() -> dict:
     """
@@ -91,8 +92,9 @@ def main() -> None | str:
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
-    parser.add_argument('-rp', '--remote_port', type=int, required=False)
+    parser.add_argument('-rp', '--target_ports', type=int, required=False, help='Ports to scan, if option is not selected all ports will be scanned')
     parser.add_argument('-o', '--output', type=str, help='output report file name (markdown format)', required=False)
+    parser.add_argument('-m', '--masscan', action='store_true', help='Run masscan on the targets before nmap')
     parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
     args = parser.parse_args()
 
@@ -105,11 +107,9 @@ def main() -> None | str:
     # validate IP addresses' format
     validate_ip_address(LOCAL_IP)
     
-    if args.remote_port:
-        res_recon = recon.nmap_scan({args.target_ip:[args.remote_port]})
-    else:
-        res_masscan = recon.masscan_scan(args.target_ip, args.fast_scan)
-        no_ports_open = True
+    no_ports_open = True
+    if args.masscan:
+        res_masscan = recon.masscan_scan(args.target_ip, args.fast_scan, args.target_ports)
         for target, ports in res_masscan.items():
             if len(ports) > 0:
                 no_ports_open = False
@@ -117,13 +117,22 @@ def main() -> None | str:
         if no_ports_open:
             sys.exit('[-] Error: No open ports found by masscan')
         res_recon = recon.nmap_scan(res_masscan)
+    else:
+        if args.target_ports:
+            nmap_input = {args.target_ip:[args.target_ports]}
+        else:
+            nmap_input = {args.target_ip:['-']}
+        res_recon = recon.nmap_scan(nmap_input)
+        for ports in res_recon:
+            if len(ports) > 0:
+                no_ports_open = False
+                break
+        if no_ports_open:
+            sys.exit('[-] Error: No open ports found by nmap')
 
     # deploy c2 and start client
     c2_infos = c2.c2(LOCAL_IP)
-    c2.starkiller()
-
-    BUFFER_SIZE = 1024 * 128
-    SEPARATOR = '<sep>'
+    c2.get_starkiller()
     
     for target in res_recon:
         for i in target:
