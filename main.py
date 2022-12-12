@@ -92,7 +92,7 @@ def main() -> None | str:
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
-    parser.add_argument('-rp', '--target_ports', type=int, required=False, help='Ports to scan, if option is not selected all ports will be scanned')
+    parser.add_argument('-rp', '--target_ports', type=str, required=False, help='Ports to scan, if option is not selected all ports will be scanned')
     parser.add_argument('-o', '--output', type=str, help='output report file name (markdown format)', required=False)
     parser.add_argument('-m', '--masscan', action='store_true', help='Run masscan on the targets before nmap')
     parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
