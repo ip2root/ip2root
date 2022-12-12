@@ -132,7 +132,7 @@ def main() -> None | str:
 
     # deploy c2 and start client
     c2_infos = c2.c2(LOCAL_IP)
-    c2.starkiller()
+    c2.get_starkiller()
     
     for target in res_recon:
         for i in target:
