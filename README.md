@@ -4,9 +4,9 @@
 
 ## Description
 
-This tool aims to provide a root shell from a simple IP.
+This tool aims to provide a root access to some machines by just giving the machines' IP in input.
 
-:warning: WARNING :warning: : This tool is currently in development. You can track progress [here](https://github.com/orgs/ip2root/projects/1)
+:warning: WARNING :warning: : This tool is currently in development. You can track progress [here](https://github.com/orgs/ip2root/projects/1).
 Pull requests are welcome.
 
 ## Disclaimer
