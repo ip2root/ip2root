@@ -11,6 +11,7 @@ import more_itertools
 import getpass
 import psutil
 import constants
+from utils import *
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP) -> None | str:
@@ -34,12 +35,12 @@ def c2(LOCAL_IP) -> None | str:
                 if 'Plugin csharpserver ran successfully!' in container.logs(tail=3).decode('utf-8'):
                     print('\n[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
                     break
-            print('[+] Listening on port 8888 (CLIHTTP)')
+            print('[+] Listening (CLIHTTP)') # Ask C2 for the port
             while True:
                 login_infos = get_password(True)
                 token = c2_token(login_infos[0], login_infos[1])
                 if token == False:
-                    print('[-] Wrong password. Please try again.')
+                    print('[-] Wrong username or password. Please try again.')
                 else:
                     break
             return client.containers.list(all)[i].short_id, token
@@ -48,9 +49,15 @@ def c2(LOCAL_IP) -> None | str:
         return infos
 
 def deploy_c2(LOCAL_IP):
+    try:
+        C2_LISTENER_PORT = int(input('[!] Choose a port on which you want the C2 to listen (default: 8888): ') or 8888)
+    except:
+        print('[-] Port should be an integer, try again.')
+        exit()
+
+
     print('[+] Deploying C2 container')
     login_infos = get_password(False)
-    C2_LISTENER_PORT = 8888
     client = docker.from_env()
     container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
     for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
@@ -64,7 +71,7 @@ def deploy_c2(LOCAL_IP):
             break
     container.exec_run("./ps-empire server --username {0} --password '{1}'".format(login_infos[0], login_infos[1]))
     token = c2_token(login_infos[0], login_infos[1])
-    c2_listener(token, LOCAL_IP)
+    c2_listener(token, LOCAL_IP, C2_LISTENER_PORT)
     print('[+] C2 container created successfully (Docker ID : {0})'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
     return container.short_id, token
@@ -73,7 +80,7 @@ def check_docker():
     res_docker = subprocess.check_output('which docker', shell=True, universal_newlines=True)
     if 'docker' not in res_docker:
         print('[-] Docker is not installed on your system. Please intall it from https://docs.docker.com')
-        exit
+        exit()
     res_group = subprocess.check_output('id -nG "$(whoami)" | grep -qw "docker" && echo 1 || echo 0 && id -nG "$(whoami)" | grep -qw "root" && echo 1 || echo 0', shell=True, universal_newlines=True)
     if '1' not in res_group:
         print('[-] Your current user is not part of the docker group. Add it or start ip2root with a user that is part of the docker group.')
@@ -135,11 +142,12 @@ def c2_token(username, password):
         token = json_token['token']
         return token
     except:
-        return False
+        print('[-] Fatal error, could not retrieve the token. Try again.')
+        exit()
     
-def c2_listener(token, LOCAL_IP):
-    url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(str(token))
-    param_listener = {"Name":"CLIHTTP", "Port":"8888", "Host":"{0}".format(LOCAL_IP)}
+def c2_listener(token, LOCAL_IP, listener_port):
+    url_listener = 'https://localhost:1337/api/listeners/http?token={0}'.format(token)
+    param_listener = {"Name":"CLIHTTP", "Port":"{0}".format(listener_port), "Host":"{0}".format(LOCAL_IP)}
     headers = {"Content-Type": "application/json"}
     requests.post(url_listener, headers=headers, json=param_listener, verify=False)
 
