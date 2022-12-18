@@ -12,6 +12,7 @@ import getpass
 import psutil
 import constants
 from utils import *
+import random
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP) -> None | str:
@@ -24,7 +25,8 @@ def c2(LOCAL_IP) -> None | str:
         if "bcsecurity/empire" in container.attrs['Config']['Image']:
             print('[+] Detected an existing C2 container')
             is_up = True
-            client.containers.list(all)[i].start()
+            empire_container = client.containers.list(all)[i]
+            empire_container.start()
             for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
                 logs = '   ' + str(container.logs(tail=1).decode('utf-8'))
                 sys.stdout.write('\033[2K\r[+] Starting the Docker... ' + c)
@@ -43,10 +45,43 @@ def c2(LOCAL_IP) -> None | str:
                     print('[-] Wrong username or password. Please try again.')
                 else:
                     break
+            token = check_listener_host(token, LOCAL_IP, empire_container, login_infos)
             return client.containers.list(all)[i].short_id, token
     if not is_up:
         infos = deploy_c2(LOCAL_IP)
         return infos
+
+def check_listener_host(token, LOCAL_IP, empire_container, login_infos):
+    client = docker.from_env()
+    url_listener = 'https://localhost:1337/api/listeners?token={0}'.format(token)
+    headers = {"Content-Type": "application/json"}
+    r = requests.get(url_listener, headers=headers, verify=False)
+    json_listeners = json.loads(r.text)
+    ip_listener_dict = {}
+    for listener in json_listeners['listeners']:
+        ip_listener_dict[listener['name']] = listener['options']['Host']['Value']
+    if 'CLIHTTP' not in ip_listener_dict or LOCAL_IP not in ip_listener_dict['CLIHTTP']:
+        url_delete = 'https://localhost:1337/api/listeners/CLIHTTP?token={0}'.format(token)
+        requests.delete(url_delete, headers=headers, verify=False)
+        try:
+            C2_LISTENER_PORT = int(input('[!] Choose a port on which you want the C2 to listen (default: 8888): ') or 8888)
+        except:
+            print('[-] Port should be an integer, try again.')
+            exit()
+        c2_listener(token, LOCAL_IP, C2_LISTENER_PORT)
+        ports = client.containers.get(empire_container.__getattribute__('short_id')).__getattribute__('ports')
+        dict_port = {}
+        dict_port['{0}/tcp'.format(C2_LISTENER_PORT)] = C2_LISTENER_PORT
+        for i in ports:
+            dict_port[i]=int(i.strip('/tcp'))
+        new_container = 'empire{0}'.format(random.randint(0, 50))
+        empire_container.stop()
+        empire_container.commit(repository=new_container, tag=new_container)
+        client.containers.run(image='{0}:{0}'.format(new_container), ports=dict_port, name=new_container, tty=True, detach=True)
+        sleep(10)
+        token = c2_token(login_infos[0], login_infos[1])
+
+        return token
 
 def deploy_c2(LOCAL_IP):
     try:
@@ -54,8 +89,6 @@ def deploy_c2(LOCAL_IP):
     except:
         print('[-] Port should be an integer, try again.')
         exit()
-
-
     print('[+] Deploying C2 container')
     login_infos = get_password(False)
     client = docker.from_env()
