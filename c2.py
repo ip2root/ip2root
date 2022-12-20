@@ -13,6 +13,7 @@ import psutil
 import constants
 from utils import *
 import random
+from datetime import datetime
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP) -> None | str:
@@ -20,36 +21,53 @@ def c2(LOCAL_IP) -> None | str:
     is_up = False
     client = docker.from_env()
 
+    empire_container = {}
+    empire_date = {}
     for i in range(len(client.containers.list(all))):
         container = client.containers.get(client.containers.list(all)[i].__getattribute__('short_id'))
-        if "bcsecurity/empire" in container.attrs['Config']['Image']:
-            print('[+] Detected an existing C2 container')
-            is_up = True
-            empire_container = client.containers.list(all)[i]
-            empire_container.start()
-            for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
-                logs = '   ' + str(container.logs(tail=1).decode('utf-8'))
-                sys.stdout.write('\033[2K\r[+] Starting the Docker... ' + c)
-                if "WARNING: your terminal doesn't support" not in logs:
-                    sys.stdout.write((logs.replace('\r', '')).replace('\n', ''))
-                sys.stdout.flush()
-                sleep(0.1)
-                if 'Plugin csharpserver ran successfully!' in container.logs(tail=3).decode('utf-8'):
-                    print('\n[+] C2 started successfully from existing docker (ID: {0})'.format(client.containers.list(all)[i].short_id))
-                    break
-            print('[+] Listening (CLIHTTP)') # Ask C2 for the port
-            while True:
-                login_infos = get_password(True)
-                token = c2_token(login_infos[0], login_infos[1])
-                if token == False:
-                    print('[-] Wrong username or password. Please try again.')
-                else:
-                    break
-            token = check_listener_host(token, LOCAL_IP, empire_container, login_infos)
-            return client.containers.list(all)[i].short_id, token
+        if "empire" in container.attrs['Config']['Image']:
+            empire_container[container.attrs['Config']['Image']] = container
+    if empire_container:
+        print('[+] Detected an existing C2 container')
+        for i in empire_container:
+            empire_date[(client.images.get(i).attrs['Created']).split('T')[0]] = empire_container[i]
+        container = find_latest_date(empire_date)
+        is_up = True
+        container.start()
+        for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
+            logs = '   ' + str(container.logs(tail=1).decode('utf-8'))
+            sys.stdout.write('\033[2K\r[+] Starting the Docker... ' + c)
+            if "WARNING: your terminal doesn't support" not in logs:
+                sys.stdout.write((logs.replace('\r', '')).replace('\n', ''))
+            sys.stdout.flush()
+            sleep(0.1)
+            if 'Plugin csharpserver ran successfully!' in container.logs(tail=3).decode('utf-8'):
+                print('\n[+] C2 started successfully from existing docker (ID: {0})'.format(container.short_id))
+                break
+        print('[+] Listening (CLIHTTP)') # Ask C2 for the port
+        while True:
+            login_infos = get_password(True)
+            token = c2_token(login_infos[0], login_infos[1])
+            if token == False:
+                print('[-] Wrong username or password. Please try again.')
+            else:
+                break
+        token = check_listener_host(token, LOCAL_IP, empire_container, login_infos)
+        return container.short_id, token
     if not is_up:
         infos = deploy_c2(LOCAL_IP)
         return infos
+
+def find_latest_date(dates_dict):
+  latest_date = None
+  latest_date_id = None
+  for date, id in dates_dict.items():
+    dt = datetime.strptime(date, '%Y-%m-%d')
+    if latest_date is None or dt > latest_date:
+      latest_date = dt
+      latest_date_id = id
+
+  return latest_date_id
 
 def check_listener_host(token, LOCAL_IP, empire_container, login_infos):
     client = docker.from_env()
@@ -82,7 +100,6 @@ def check_listener_host(token, LOCAL_IP, empire_container, login_infos):
         token = c2_token(login_infos[0], login_infos[1])
 
     return token
-
 
 def deploy_c2(LOCAL_IP):
     try:
