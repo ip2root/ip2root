@@ -81,7 +81,8 @@ def check_listener_host(token, LOCAL_IP, empire_container, login_infos):
         sleep(10)
         token = c2_token(login_infos[0], login_infos[1])
 
-        return token
+    return token
+
 
 def deploy_c2(LOCAL_IP):
     try:
