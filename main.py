@@ -12,6 +12,7 @@ from plugins.initial_access import *
 import constants
 import c2
 from pyfiglet import Figlet
+import report
 import ipaddress
 
 def read_plugins_configs() -> dict:
@@ -48,16 +49,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
         if res is True:
             print('[+] Exploit was successful !')
             if compromission_recap_file_name:
-                with open(compromission_recap_file_name, 'w') as report:
-                    report.write('# IP2ROOT report\n\n')
-                    report.write('## IP address and Port\n`{}:{}`\n'.format(target_ip, target_port))
-                    report.write('## Vulnerability used for initial access\n')
-                    report.write('#### Service : `{}`\n'.format(safe_get(plugin_config, 'service')))
-                    report.write('#### Version : `{}`\n'.format(safe_get(plugin_config, 'versions')))
-                    if safe_get(plugin_config, 'CVE'):
-                        report.write('#### CVE : `{}`\n'.format(safe_get(plugin_config, 'CVE')))
-                    if safe_get(plugin_config, 'CVSSv3'):
-                        report.write('#### CVSSv3 : `{}`\n'.format(safe_get(plugin_config, 'CVSSv3')))
+                report.write_report(compromission_recap_file_name, plugin_config, target_ip, target_port)
     except Exception as e:
         print(e)
 

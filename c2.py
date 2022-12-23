@@ -110,7 +110,11 @@ def deploy_c2(LOCAL_IP):
     print('[+] Deploying C2 container')
     login_infos = get_password(False)
     client = docker.from_env()
-    container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
+    try:
+        container = client.containers.run(image='bcsecurity/empire:latest', ports={'1337/tcp':1337, '5000/tcp':5000, '{}/tcp'.format(C2_LISTENER_PORT):C2_LISTENER_PORT}, name='empire', tty=True, detach=True)
+    except:
+        print('[-] Can not reach docker registry. Try again.')
+        exit()
     for c in more_itertools.ncycles(['|', '/', '-', '\\'], 100):
         logs = '   ' + str(container.logs(tail=1).decode('utf-8'))
         sys.stdout.write('\033[2K\r[+] Starting the Docker... ' + c)
