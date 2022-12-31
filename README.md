@@ -38,7 +38,7 @@ pip3 install -r requirements.txt
 ### 4. Run ip2root
 
 ```shell
-python3 main.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
+python3 ip2root.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
 ```
 
 ### Troubleshooting
