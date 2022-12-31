@@ -8,12 +8,12 @@ import random
 import urllib3
 import getpass
 import requests
-import constants
 import subprocess
 import more_itertools
 from time import sleep
 from core.utils import *
 from datetime import datetime
+import core.constants as constants
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def c2(LOCAL_IP: str) -> None | str:

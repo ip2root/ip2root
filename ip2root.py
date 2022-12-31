@@ -2,13 +2,13 @@ import os
 import sys
 import socket
 import argparse
-import constants
 import c2.c2 as c2
 import configparser
 from core.utils import *
 import core.recon as recon
 from pyfiglet import Figlet
 import core.report as report
+import core.constants as constants
 from multiprocessing import Process
 from plugins.initial_access import *
 
