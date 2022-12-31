@@ -19,7 +19,7 @@ We are not responsible of the actions done by your usage of the tool.
 ### 1. Clone repo
 
 ```shell
-git clone git@github.com:0xblank/ip2root.git
+git clone git@github.com:ip2root/ip2root.git
 ```
 
 ### 2. Create a venv (optional)
