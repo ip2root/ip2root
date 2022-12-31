@@ -1,4 +1,4 @@
-from utils import *
+from core.utils import *
 
 def write_report(compromission_recap_file_name: str, plugin_config: list, target_ip: str, target_port: int) -> bool:
     with open(compromission_recap_file_name, 'w') as report:

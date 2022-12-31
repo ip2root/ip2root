@@ -11,8 +11,8 @@ import requests
 import constants
 import subprocess
 import more_itertools
-from utils import *
 from time import sleep
+from core.utils import *
 from datetime import datetime
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -46,7 +46,7 @@ def c2(LOCAL_IP: str) -> None | str:
             if 'Plugin csharpserver ran successfully!' in container.logs(tail=3).decode('utf-8'):
                 print('\n[+] C2 started successfully from existing docker (ID: {0})'.format(container.short_id))
                 break
-        print('[+] Listening (CLIHTTP)') # Ask C2 for the port
+        
         while True:
             login_infos = get_password(True)
             token = get_c2_token(login_infos[0], login_infos[1])
@@ -54,7 +54,8 @@ def c2(LOCAL_IP: str) -> None | str:
                 print('[-] Wrong username or password. Please try again.')
             else:
                 break
-        token = check_listener_host(token, LOCAL_IP, empire_container, login_infos)
+        token = check_listener_host(token, LOCAL_IP, container, login_infos)
+        print('[+] Listening (CLIHTTP)') # Ask C2 for the port
         return container.short_id, token
     if not is_up:
         infos = deploy_c2(LOCAL_IP)

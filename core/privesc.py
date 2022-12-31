@@ -1,5 +1,4 @@
 import os
-import rs_client
 from time import sleep
 
 def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromission_recap_file_name: str) -> None:

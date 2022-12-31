@@ -1,6 +1,5 @@
-import re
-import xml.dom.minidom
 import ipaddress
+import xml.dom.minidom
 from typing import Any
 
 def parse_nmap_xml(target: str) -> str:

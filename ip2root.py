@@ -1,19 +1,17 @@
-import argparse
-import socket
-import recon
-import socket
-from multiprocessing import Process
-import sys
-import configparser
 import os
 import sys
-from utils import *
-from plugins.initial_access import *
+import socket
+import argparse
 import constants
-import c2
+import c2.c2 as c2
+import configparser
+from core.utils import *
+import core.recon as recon
 from pyfiglet import Figlet
-import report
-import ipaddress
+import core.report as report
+from multiprocessing import Process
+from plugins.initial_access import *
+
 
 def read_plugins_configs() -> dict:
     """
@@ -70,17 +68,11 @@ def extract_ip() -> None | str:
     return IP
 
 
-def main() -> None | str:
-
-    f = Figlet(font='slant')
-    print(f.renderText('IP2ROOT'))
-    print('\033[1m' + 'By 0xblank, Steels, Lebansx, Koko' + '\033[0m\n')
-    print('\033[1m' + '/!\ DISCLAIMER /!\ ' + '\033[0m')
-    print("The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on. We are not responsible of the actions done by your usage of the tool.\n")
-
-    configs = read_plugins_configs()
+def parse_cli_args() -> None | object:
+    '''
+    Parse CLI arguments
+    '''
     parser = argparse.ArgumentParser()
-
     parser.add_argument('-t', '--target_ip', type=str, help='ip to target', required=True)
     parser.add_argument('-l', '--local_ip', type=str, help='local ip', required=False)
     parser.add_argument('-lp', '--local_port', default=9001, type=int, help='local port', required=False)
@@ -88,8 +80,28 @@ def main() -> None | str:
     parser.add_argument('-o', '--output', type=str, help='output report file name (markdown format)', required=False)
     parser.add_argument('-m', '--masscan', action='store_true', help='Run masscan on the targets before nmap')
     parser.add_argument('-f', '--fast-scan', action='store_true', help='increase masscan\'s rate limit to 100000, be careful with this option it might flood the network', required=False)
-    args = parser.parse_args()
 
+    return parser.parse_args()
+
+
+def banner_display() -> None:
+    '''
+    Display banner at the start
+    '''
+    f = Figlet(font='slant')
+    print(f.renderText('IP2ROOT'))
+    print('\033[1m' + 'By 0xblank, Steels, Lebansx, Koko' + '\033[0m\n')
+    print('\033[1m' + '/!\ DISCLAIMER /!\ ' + '\033[0m')
+    print("The tool has been created to help pentesters and redteamers and should only be used against targets you have rights on. We are not responsible of the actions done by your usage of the tool.\n")
+
+
+def main() -> None | str:
+    banner_display()
+
+    # get plugins config
+    configs = read_plugins_configs()
+    # get CLI arguments
+    args = parse_cli_args()
 
     if args.local_ip == None:
         LOCAL_IP = extract_ip()
@@ -99,6 +111,7 @@ def main() -> None | str:
     # validate IP addresses' format
     validate_ip_address(LOCAL_IP)
     
+    # start initial scanning
     no_ports_open = True
     if args.masscan:
         res_masscan = recon.masscan_scan(args.target_ip, args.fast_scan, args.target_ports)
@@ -126,6 +139,7 @@ def main() -> None | str:
     c2_infos = c2.c2(LOCAL_IP)
     c2.get_starkiller()
     
+    # Search a compatible exploit and start it
     for target in res_recon:
         for i in target:
             print('[+] Looking for exploits for port {}'.format(i['port']))
