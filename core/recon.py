@@ -1,6 +1,7 @@
 import json
 from core.utils import *
 from libnmap.process import NmapProcess
+import masscan
 
 def nmap_scan(targets_open_ports: dict) -> list:
     """
