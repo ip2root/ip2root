@@ -53,6 +53,10 @@ If you have encounter the following error message
 ```
 This means you need to add `CAP_NET_RAW` to masscan to be able to run it without being root. You can use the following command to do so : `sudo setcap CAP_NET_RAW+ep <masscan path>`
 
+## How to test
+
+You can use the vulnerable dockers available the [infra-vuln](https://github.com/ip2root/ip2root-infra) repository to test the tool.
+
 ## How to contribute
 
 Any contribution would be appreciated (improvement, new exploits, etc.).
