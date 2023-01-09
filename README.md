@@ -19,7 +19,7 @@ We are not responsible of the actions done by your usage of the tool.
 ### 1. Clone repo
 
 ```shell
-git clone git@github.com:0xblank/ip2root.git
+git clone git@github.com:ip2root/ip2root.git
 ```
 
 ### 2. Create a venv (optional)
@@ -38,7 +38,7 @@ pip3 install -r requirements.txt
 ### 4. Run ip2root
 
 ```shell
-python3 main.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
+python3 ip2root.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
 ```
 
 ### Troubleshooting

