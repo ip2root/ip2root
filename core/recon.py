@@ -2,6 +2,7 @@ import json
 import masscan
 from core.utils import *
 from libnmap.process import NmapProcess
+import masscan
 
 def nmap_scan(targets_open_ports: dict) -> list:
     """
@@ -27,12 +28,6 @@ def nmap_scan(targets_open_ports: dict) -> list:
                 'extrainfo': safe_get(port, 'extrainfo'),
                 'http_title': safe_get(port, 'http_title')
             }
-            to_del = []
-            for key in res_port:
-                if res_port[key] == '':
-                    to_del.append(key)
-            for k in to_del:
-                del res_port[k]
             res_scan.append(res_port)
         res_nmap_scans.append(res_scan)
     return res_nmap_scans
