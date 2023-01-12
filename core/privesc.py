@@ -1,7 +1,48 @@
 import os
+import docker
 from time import sleep
 
-def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromission_recap_file_name: str) -> None:
+def plugins(container_id: str, login_infos: list):
+    '''
+    Initial function to create plugins directory if it doesn't exist
+    '''
+    client = docker.from_env()
+    empire_container = client.containers.get(container_id)
+    check_plugin_directory = empire_container.exec_run('ls /plugins')
+    if check_plugin_directory.exit_code == 2:
+        empire_container.exec_run('mkdir /plugins')
+        plugins_liste = list_plugins()
+        load_plugins(plugins_liste, empire_container, container_id)
+    test_plugins(empire_container, login_infos)
+        
+def list_plugins():
+    '''
+    List privesc plugins in ip2root's git repo
+    '''
+    plugins_liste = []
+    directory = './plugins/privesc/'
+    for filename in os.listdir(directory):
+        f = os.path.join(directory, filename)
+        if os.path.isfile(f):
+            plugins_liste.append(f)
+    return plugins_liste
+
+def load_plugins(plugins_liste: str, empire_container: object, container_id: str):
+    '''
+    Copy plugins in the docker
+    '''
+    empire_container.exec_run('rm /plugins/*')
+    for plugin in plugins_liste:
+        os.system('docker cp {0} {1}:/plugins/'.format(plugin, container_id))
+
+def test_plugins(empire_container: object, login_infos: list):
+    '''
+    Test the privesc
+    '''
+    empire_container.exec_run('sed -i "s/username: .*/username: {0}/g" /empire/empire/client/config.yaml'.format(login_infos[0]))
+    empire_container.exec_run('sed -i "s/password: .*/password: {0}/g" /empire/empire/client/config.yaml'.format(login_infos[1]))
+
+'''def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromission_recap_file_name: str) -> None:
     """
     Run all available privesc plugins
     """
@@ -43,4 +84,4 @@ def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromissi
             else:
                 print("")
                 sock.send('rm /tmp/exploit*\n') 
-            counter += 1
+            counter += 1'''

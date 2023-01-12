@@ -55,8 +55,8 @@ def c2(LOCAL_IP: str) -> None | str:
             else:
                 break
         token = check_listener_host(token, LOCAL_IP, container, login_infos)
-        print('[+] Listening (CLIHTTP)') # Ask C2 for the port
-        return container.short_id, token
+        print('[+] Listening (CLIHTTP)')
+        return container.short_id, token, login_infos
     if not is_up:
         infos = deploy_c2(LOCAL_IP)
         return infos
@@ -139,7 +139,7 @@ def deploy_c2(LOCAL_IP: str) -> None | str:
     create_listener(token, LOCAL_IP, C2_LISTENER_PORT)
     print('[+] C2 container created successfully (Docker ID : {0})'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
-    return container.short_id, token
+    return container.short_id, token, login_infos
 
 def check_docker() -> None:
     '''

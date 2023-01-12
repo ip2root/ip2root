@@ -1,4 +1,5 @@
 import json
+import masscan
 from core.utils import *
 from libnmap.process import NmapProcess
 
