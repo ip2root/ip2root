@@ -49,7 +49,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config: list, target_ip: 
             print('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 report.write_report(compromission_recap_file_name, plugin_config, target_ip, target_port)
-            privesc.plugins(container_id, token)
+            privesc.plugins(container_id, token, target_ip)
     except Exception as e:
         print(e)
 

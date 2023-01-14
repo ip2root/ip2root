@@ -159,7 +159,7 @@ def get_password(status: bool) -> None | str:
     Get the password for the C2 container
     '''
     if status == True:
-        username = input('[!] Enter your username to access the C2 : ')
+        username = input('\n[!] Enter your username to access the C2 : ')
         password = getpass.getpass('[!] Enter your password to access the C2 : ')
     else:
         while True:
@@ -219,7 +219,7 @@ def get_c2_token(username: str, password: str) -> None | str:
         token = json_token['token']
         return token
     except:
-        print('[-] Fatal error, could not retrieve the token. Try again.')
+        print('[-] Wrong credentials, could not retrieve the token. Try again.')
         exit()
     
 def create_listener(token: str, LOCAL_IP: str, listener_port: int) -> None:
