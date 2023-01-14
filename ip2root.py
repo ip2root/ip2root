@@ -49,7 +49,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config: list, target_ip: 
             print('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 report.write_report(compromission_recap_file_name, plugin_config, target_ip, target_port)
-            privesc.test_plugins(container_id)
+            privesc.plugins(container_id, token)
     except Exception as e:
         print(e)
 
@@ -140,7 +140,7 @@ def main() -> None | str:
     # deploy c2 and start client
     c2_infos = c2.c2(LOCAL_IP)
     c2.get_starkiller()
-    privesc.plugins(c2_infos[0], c2_infos[2])
+    c2.change_client_password(c2_infos[3], c2_infos[2])
 
     
     # Search a compatible exploit and start it

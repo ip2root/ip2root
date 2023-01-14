@@ -1,8 +1,9 @@
 import os
 import docker
+import requests
 from time import sleep
 
-def plugins(container_id: str, login_infos: list):
+def plugins(container_id: str, token: str):
     '''
     Initial function to create plugins directory if it doesn't exist
     '''
@@ -13,7 +14,7 @@ def plugins(container_id: str, login_infos: list):
         empire_container.exec_run('mkdir /plugins')
         plugins_liste = list_plugins()
         load_plugins(plugins_liste, empire_container, container_id)
-    test_plugins(empire_container, login_infos)
+    test_plugins(empire_container, token)
         
 def list_plugins():
     '''
@@ -35,12 +36,22 @@ def load_plugins(plugins_liste: str, empire_container: object, container_id: str
     for plugin in plugins_liste:
         os.system('docker cp {0} {1}:/plugins/'.format(plugin, container_id))
 
-def test_plugins(empire_container: object, login_infos: list):
+def test_plugins(empire_container: object, token: str):
     '''
     Test the privesc
     '''
-    empire_container.exec_run('sed -i "s/username: .*/username: {0}/g" /empire/empire/client/config.yaml'.format(login_infos[0]))
-    empire_container.exec_run('sed -i "s/password: .*/password: {0}/g" /empire/empire/client/config.yaml'.format(login_infos[1]))
+    url = 'https://localhost:1337/api/agents/TEASX3UF/shell?token={0}'.format(token)
+    header = {"Content-Type": "application/json"}
+    param = {"command":"id"}
+    r_cmd = requests.post(url, headers=header, json=param, verify=False)
+    
+    sleep(10)
+
+    url_res = 'https://localhost:1337/api/agents/TEASX3UF/results?token={0}'.format(token)
+    r_res = requests.get(url_res, headers=header, verify=False)
+    resultats = r_res.text
+
+    print(resultats[0])
 
 '''def load_all_plugins(sock: rs_client.Socket, shell: rs_client.Shell, compromission_recap_file_name: str) -> None:
     """
