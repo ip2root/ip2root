@@ -215,9 +215,7 @@ def get_c2_token(username: str, password: str) -> None | str:
         headers = {"Content-Type": "application/json"}
         param = {"username":"{0}".format(username), "password":"{0}".format(password)}
         r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
-        json_token = json.loads(r_c2.text)
-        token = json_token['token']
-        return token
+        return r_c2.json()['token']
     except:
         print('[-] Wrong credentials, could not retrieve the token. Try again.')
         exit()
