@@ -20,6 +20,8 @@ We are not responsible of the actions done by your usage of the tool.
 git clone git@github.com:ip2root/ip2root.git
 ```
 
+You need to have masscan and nmap installed on your machine in order for the tool to work
+
 ### Poetry install
 
 ```shell
