@@ -16,26 +16,37 @@ We are not responsible of the actions done by your usage of the tool.
 
 ##  How to use the tool
 
-### 1. Clone repo
-
 ```shell
 git clone git@github.com:ip2root/ip2root.git
 ```
 
-### 2. Create a venv (optional)
+### Poetry install
+
+```shell
+# Create a venv
+poetry shell
+# Install dependencies
+poetry install
+# Run ip2root
+poetry run python3 ip2root.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
+```
+
+### Pip install
+
+### 1. Create a venv (optional)
 
 ```shell
 python3 -m venv venv_ip2root
 source venv_ip2root/bin/activate
 ```
 
-### 3. Install required dependencies
+### 2. Install required dependencies
 
 ```shell
 pip3 install -r requirements.txt
 ```
 
-### 4. Run ip2root
+### 3. Run ip2root
 
 ```shell
 python3 ip2root.py -t <target_ip> [-l <local-ip>] [-lp <local-port>] [-rp <remote-port>] [-o <output.md>]
