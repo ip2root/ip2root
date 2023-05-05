@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ip2root"
+version = "1.0.0"
+description = "Tool that gets you root from just an ip"
+authors = ["blank <26724501+0xblank@users.noreply.github.com>"]
+license = "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public licence"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+beautifulsoup4 = "^4.12.2"
+docker = "^6.1.0"
+python-libnmap = "^0.7.3"
+requests = "^2.30.0"
+pyfiglet = "^0.8.post1"
+psutil = "^5.9.5"
+urllib3 = "^2.0.2"
+more-itertools = "^9.1.0"
+python-masscan = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+pylint = "^2.17.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
