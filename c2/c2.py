@@ -55,8 +55,8 @@ def c2(LOCAL_IP: str) -> None | str:
             else:
                 break
         token = check_listener_host(token, LOCAL_IP, container, login_infos)
-        print('[+] Listening (CLIHTTP)') # Ask C2 for the port
-        return container.short_id, token
+        print('[+] Listening (CLIHTTP)')
+        return container.short_id, token, login_infos, container
     if not is_up:
         infos = deploy_c2(LOCAL_IP)
         return infos
@@ -139,7 +139,7 @@ def deploy_c2(LOCAL_IP: str) -> None | str:
     create_listener(token, LOCAL_IP, C2_LISTENER_PORT)
     print('[+] C2 container created successfully (Docker ID : {0})'.format(container.short_id))
     print('[+] Listener created on port {} (CLIHTTP)'.format(C2_LISTENER_PORT))
-    return container.short_id, token
+    return container.short_id, token, login_infos, container
 
 def check_docker() -> None:
     '''
@@ -159,7 +159,7 @@ def get_password(status: bool) -> None | str:
     Get the password for the C2 container
     '''
     if status == True:
-        username = input('[!] Enter your username to access the C2 : ')
+        username = input('\n[!] Enter your username to access the C2 : ')
         password = getpass.getpass('[!] Enter your password to access the C2 : ')
     else:
         while True:
@@ -176,25 +176,6 @@ def get_starkiller() -> None:
     '''
     Download and start starkiller
     '''
-    STARKILLER_PATH = '/tmp/starkiller'
-    if not os.path.exists(STARKILLER_PATH):
-        STARKILLER_URL = 'https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage'
-        print('[+] Downloading starkiller in {} from {}'.format(STARKILLER_PATH, STARKILLER_URL))
-        with open(STARKILLER_PATH, 'wb') as f:
-            response = requests.get(STARKILLER_URL, stream=True, allow_redirects=True)
-            total_length = response.headers.get('content-length')
-            if total_length is None:
-                f.write(response.content)
-            else:
-                dl = 0
-                total_length = int(total_length)
-                for data in response.iter_content(chunk_size=4096):
-                    dl += len(data)
-                    f.write(data)
-                    done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[.] [%s%s]" % ('#' * done, ' ' * (50-done)) )    
-                    sys.stdout.flush()
-        print('\n[+] Starkiller downloading done')
     STARKILLER_RUNNING = False
     for i in psutil.pids():
         p = psutil.Process(i)
@@ -202,9 +183,28 @@ def get_starkiller() -> None:
             STARKILLER_RUNNING = True
             break
     if STARKILLER_RUNNING == False:
-        subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
-        sleep(1)
-        subprocess.Popen([STARKILLER_PATH])
+        STARKILLER_PATH = '/tmp/starkiller'
+        if not os.path.exists(STARKILLER_PATH):
+            STARKILLER_URL = 'https://github.com/BC-SECURITY/Starkiller/releases/download/v1.10.0/starkiller-1.10.0.AppImage'
+            print('[+] Downloading starkiller in {} from {}'.format(STARKILLER_PATH, STARKILLER_URL))
+            with open(STARKILLER_PATH, 'wb') as f:
+                response = requests.get(STARKILLER_URL, stream=True, allow_redirects=True)
+                total_length = response.headers.get('content-length')
+                if total_length is None:
+                    f.write(response.content)
+                else:
+                    dl = 0
+                    total_length = int(total_length)
+                    for data in response.iter_content(chunk_size=4096):
+                        dl += len(data)
+                        f.write(data)
+                        done = int(50 * dl / total_length)
+                        sys.stdout.write("\r[.] [%s%s]" % ('#' * done, ' ' * (50-done)) )    
+                        sys.stdout.flush()
+            print('\n[+] Starkiller downloading done')
+            subprocess.Popen(["chmod", "+x", STARKILLER_PATH])
+            sleep(1)
+            subprocess.Popen([STARKILLER_PATH], stderr=False, stdout=False)
 
 def get_c2_token(username: str, password: str) -> None | str:
     '''
@@ -215,11 +215,9 @@ def get_c2_token(username: str, password: str) -> None | str:
         headers = {"Content-Type": "application/json"}
         param = {"username":"{0}".format(username), "password":"{0}".format(password)}
         r_c2 = requests.post(url_c2, headers=headers, json=param, verify=False)
-        json_token = json.loads(r_c2.text)
-        token = json_token['token']
-        return token
+        return r_c2.json()['token']
     except:
-        print('[-] Fatal error, could not retrieve the token. Try again.')
+        print('[-] Wrong credentials, could not retrieve the token. Try again.')
         exit()
     
 def create_listener(token: str, LOCAL_IP: str, listener_port: int) -> None:
@@ -244,3 +242,7 @@ def get_stager(system: str, token: str) -> None | str:
     message_bytes = payload.encode('ascii')
     stager_b64 = base64.b64encode(message_bytes)
     return stager_b64
+
+def change_client_password(empire_container: object, login_infos: list):
+    empire_container.exec_run('sed -i "s/username: .*/username: {0}/g" /empire/empire/client/config.yaml'.format(login_infos[0]))
+    empire_container.exec_run('sed -i "s/password: .*/password: {0}/g" /empire/empire/client/config.yaml'.format(login_infos[1]))
